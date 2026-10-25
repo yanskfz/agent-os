@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "state": "HANDOFF",
+  "state": "WORKING",
   "goal": "g-0001",
   "surface": "terminal",
   "task": "Define requirements and an approval-ready design direction for yanskfz/msj-profiles, preserving the repository brief and hard constraints. Do not implement production code yet.",
@@ -37,7 +37,7 @@
       "evidence": []
     }
   ],
-  "runs": 0,
+  "runs": 1,
   "limits": {
     "maxRuns": 3,
     "maxRetriesPerGate": 1
@@ -47,5 +47,5 @@
   "blocked": null,
   "checkpoint": null,
   "pr": null,
-  "updated": "2026-10-25T06:43:40.695Z"
+  "updated": "2026-10-25T06:45:10.973Z"
 }

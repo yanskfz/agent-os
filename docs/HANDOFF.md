@@ -1,10 +1,10 @@
 # Active Handoff
 
-Status: HANDOFF
+Status: WORKING
 Goal: g-0001
 Owner: codex
 Surface: terminal
-Worker runs: 0/3
+Worker runs: 1/3
 
 ## Original task (verbatim)
 
@@ -20,7 +20,7 @@ Define requirements and an approval-ready design direction for yanskfz/msj-profi
 
 ## Next
 
-{"action":"dispatch","owner":"codex","handoff":"docs/HANDOFF.md","runsLeft":3}
+{"action":"await_report","owner":"codex"}
 
 ## Rules
 

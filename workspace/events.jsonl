@@ -1,1 +1,2 @@
 {"id":"e-0001","type":"goal","actor":"project-owner","task":"g-0001","ts":"2026-10-25T06:43:40.695Z","evidence":[],"from":"IDLE","to":"HANDOFF","transitions":["IDLE>INTAKE","INTAKE>TRIAGE","TRIAGE>HANDOFF"],"note":null,"sender":"yanskfz"}
+{"id":"e-0002","type":"dispatch","actor":"codex","task":"g-0001","ts":"2026-10-25T06:45:10.973Z","evidence":[],"from":"HANDOFF","to":"WORKING","transitions":["HANDOFF>WORKING"],"note":null,"sender":"yanskfz"}
