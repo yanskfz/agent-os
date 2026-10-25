@@ -17,7 +17,7 @@ const FIXTURE = path.join(ROOT, "fixtures/sample-site");
 const OUT = path.join(ROOT, "tests/results");
 const LOGS = path.join(OUT, "logs");
 const MODEL = process.env.MODEL || "claude-haiku-5-5";
-const SKILLS = ["project-planning", "web-development", "code-review", "testing-and-validation", "deployment-verification", "project-brief"];
+const SKILLS = ["agent-routing", "project-planning", "web-development", "code-review", "testing-and-validation", "deployment-verification", "project-brief"];
 const AGENTS = ["project-planner", "developer", "code-reviewer", "qa-agent", "deployment-assistant"];
 const BASH_ALLOWED = ["npm test", "npm run *", "node *", "git *", "ls *", "cat *"];
 // The RTK hook rewrites e.g. `git diff` to `rtk git diff`, and permissions are checked on the rewritten
