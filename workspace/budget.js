@@ -25,6 +25,7 @@ function estimateCost(policy, model, inputTokens, outputTokens) {
 }
 function authorizeRun(input, policy = loadPolicy()) {
   if (typeof policy.enabled !== "boolean") throw code("bad_policy", "policy.enabled must be boolean");
+  if (!policy.enabled) throw code("policy_disabled", "model execution policy is disabled");
   const selected = route(policy, input.kind, input.complexity || "normal");
   const tier = policy.tiers[selected.tier];
   const inputTokens = input.inputTokens ?? 0;
