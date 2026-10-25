@@ -4,7 +4,8 @@
       {
         "hooks": [
           { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/ensure-rtk.sh\"" },
-          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/show-brief.sh\"" }
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/show-brief.sh\"" },
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/delegation-rule.sh\"" }
         ]
       }
     ],
