@@ -2,6 +2,10 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { route, estimateCost, authorizeRun } = require("../workspace/budget");
 
+test("disabled policy fails closed", () => {
+  assert.throws(() => authorizeRun({ kind: "routing", inputTokens: 1, outputTokens: 1 }, { enabled: false }), { code: "policy_disabled" });
+});
+
 const policy = {
   enabled: true,
   autoApproveBelowUsd: 0.1,
