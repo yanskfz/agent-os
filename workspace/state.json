@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "state": "HANDOFF",
+  "goal": "g-0001",
+  "surface": "terminal",
+  "task": "Live scratch test of the orchestrator trigger.\nRecord this goal and keep this text unchanged.",
+  "owner": "claude-code",
+  "criteria": [
+    {
+      "id": "c1",
+      "text": "state is recorded on workspace-scratch",
+      "status": "not checked",
+      "evidence": []
+    },
+    {
+      "id": "c2",
+      "text": "a duplicate goal is rejected",
+      "status": "not checked",
+      "evidence": []
+    }
+  ],
+  "runs": 0,
+  "limits": {
+    "maxRuns": 3,
+    "maxRetriesPerGate": 1
+  },
+  "retries": {},
+  "changes": [],
+  "blocked": null,
+  "checkpoint": null,
+  "pr": null,
+  "updated": "2026-10-25T06:30:30.455Z"
+}
