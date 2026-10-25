@@ -6,15 +6,22 @@
 #       STATE_BRANCH  branch that holds workspace/state.json, workspace/events.jsonl, docs/HANDOFF.md
 #                     (default workspace-state; must start with "workspace-", so code branches cannot be written)
 #       REMOTE        git remote to read and push (default origin)
+#       SENDER, TRIGGERING_ACTOR  the GitHub login that sent the event (github.actor, github.triggering_actor); the
+#                     payload's own `actor` is only a claim and is checked against ALLOWLIST for this sender
+#       ALLOWLIST     file mapping sender -> actors it may act as (default workspace/allowed-senders.json)
 #       WHO, RUN_URL  recorded in the commit message and the summary
 # Exit: 0 recorded, idle or no-op   2 event rejected   3 bad state branch   4 written state failed validation   5 git failed
+#       6 sender or actor not authorized
 set -u
+HERE="$(cd "$(dirname "$0")" && pwd)"
 REMOTE="${REMOTE:-origin}"
 STATE_BRANCH="${STATE_BRANCH:-workspace-state}"
 EVENT_JSON="${EVENT_JSON:-}"
-WHO="${WHO:-unknown}"
+WHO="${WHO:-${SENDER:-unknown}}"
+SENDER="${SENDER:-}"
+TRIGGERING_ACTOR="${TRIGGERING_ACTOR:-$SENDER}"
+ALLOWLIST="${ALLOWLIST:-$HERE/allowed-senders.json}"
 RUN_URL="${RUN_URL:-}"
-HERE="$(cd "$(dirname "$0")" && pwd)"
 SUMMARY="${GITHUB_STEP_SUMMARY:-/dev/stdout}"
 
 say() { printf '%s\n' "$*" >> "$SUMMARY"; }
@@ -33,6 +40,21 @@ esac
 if printf '%s' "$STATE_BRANCH" | grep -Eq '[^A-Za-z0-9._/-]|\.\.|//|/$|\.lock$'; then
   echo "::error::state branch '$STATE_BRANCH' has characters that are not allowed"; say "### Workspace event: refused"; exit 3
 fi
+
+# Authority comes from the GitHub sender, never from the payload. This runs before any git or state access.
+AUTH_ERR="$(mktemp)"
+AUTHED="$(printf '%s' "$EVENT_JSON" | node "$HERE/authorize.js" --allow "$ALLOWLIST" --sender "$SENDER" --triggering "$TRIGGERING_ACTOR" 2>"$AUTH_ERR")"
+AUTH_CODE=$?
+ERR="$(cat "$AUTH_ERR")"; rm -f "$AUTH_ERR"
+if [ "$AUTH_CODE" -ne 0 ]; then
+  echo "::error::event not authorized: $ERR"
+  say "### Workspace event: not authorized"
+  say '```json'; say "$ERR"; say '```'
+  say "Nothing was written or pushed."
+  if [ "$AUTH_CODE" -eq 2 ]; then exit 2; fi
+  exit 6
+fi
+EVENT_JSON="$AUTHED"
 
 STATE_DIR="$(mktemp -d)"
 trap 'git worktree remove --force "$STATE_DIR" >/dev/null 2>&1; rm -rf "$STATE_DIR"' EXIT
@@ -80,7 +102,7 @@ say "### Workspace event: recorded"
 say "- state: \`$STATE\`"
 say "- branch: \`$STATE_BRANCH\`"
 say "- next: \`$NEXT\`"
-say "- by: $WHO $RUN_URL"
+say "- sent by: \`$SENDER\` (verified GitHub sender) $RUN_URL"
 if [ "$STATE" = "BLOCKED" ]; then
   echo "::warning::workspace is BLOCKED: $NEXT"
   say ""; say "**BLOCKED.** A person has to act: \`$NEXT\`"

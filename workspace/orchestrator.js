@@ -161,6 +161,8 @@ function step(prev, ev, ctx) {
   s.updated = ctx.now;
   const entry = { id: `e-${String(ctx.eventSeq).padStart(4, "0")}`, type: ev.type, actor: ev.actor, task: s.goal || "none",
     ts: ctx.now, evidence, from, to: s.state, transitions: trail, note: ev.note || ev.reason || null };
+  // Set by workspace/authorize.js from the GitHub sender; only trust it in events written through the trigger.
+  if (text(ev.sender)) entry.sender = ev.sender;
   return { state: s, entry };
 }
 

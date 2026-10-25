@@ -79,7 +79,7 @@ and the goal check, not changing the state machine.
 
 ## Tests
 
-`node tests/workspace.test.js` (16 tests, dependency-free, no model) and `node tests/trigger.test.js` (10 tests, local git only). They drive the real CLI against scratch directories and
+`node tests/workspace.test.js` (18 tests, dependency-free, no model) and `node tests/trigger.test.js` (18 tests, local git only). They drive the real CLI against scratch directories and
 validate every written state and event against the schemas.
 
 CI: `.github/workflows/workspace-tests.yml` runs the same command on Node 22 for pull requests to, and pushes on, `feat/agent-orchestrator`,
@@ -105,13 +105,26 @@ with `contents: read` only. Making it a required status is a repository branch-p
   event sent while two are queued is cancelled and shows as a cancelled run: resend it. The state machine also rejects a second goal while one is active.
 - **Permissions:** `permissions: {}` for the workflow and `contents: write` for the one job, to push the state branch. No pull-requests permission, no
   merge call anywhere; `tests/trigger.test.js` fails if either appears.
+- **Authority:** the `actor` inside a payload is only a claim. The workflow passes the sender GitHub reports (`github.actor` and
+  `github.triggering_actor`) to `workspace/authorize.js`, which checks both against `workspace/allowed-senders.json` (login to the actors it may
+  act as; logins are compared case-insensitively). The initial allowlist is `yanskfz` only. It fails closed and runs before any git or state access:
+  - no sender, a missing or malformed allowlist, a sender not on the list, or an actor the sender may not claim: exit 6, `::error::`, summary, nothing written;
+  - a payload that is not a JSON object with an `actor`: exit 2;
+  - on success the entry in `events.jsonl` carries `sender` (the verified login), replacing any `sender` the payload carried;
+  - an idle run needs no authority because it reads and writes nothing.
+
+  To let another account act as `codex`, add it to the allowlist in a reviewed PR. Narrowing `yanskfz` to fewer actors later is a one-line change.
+- **Default branch only:** the job runs only when `github.ref` is the default branch, so the allowlist and `trigger.sh` that decide authority are the
+  reviewed copies on `main`. `repository_dispatch` already runs only there.
 - **Limits:**
-  - Anyone with write access can send an event, and the `actor` inside the payload is not authenticated. Treat the dispatch right as the
-    authority check, or put the job behind a protected environment.
-  - `repository_dispatch` only runs from the workflow file on the default branch (`main`). `workflow_dispatch` is the way to try it before that.
+  - The allowlist stops other accounts and forged payload actors. It does not stop a collaborator who can push a branch from editing the workflow and
+    allowlist on their own branch and running that copy elsewhere. Containing that needs repository settings (restricting who can push, or a protected
+    environment with required reviewers), which Codex decided to leave out of the MVP.
+  - `workflow_dispatch` and `repository_dispatch` workflows are only registered once the file is on the default branch (`main`), so the Action wiring
+    cannot be run on GitHub before then.
   - The first push of an orphan state branch needs the repository to allow the Actions token to push; a branch ruleset on `workspace-*` would block it.
 
-Tested without GitHub in `tests/trigger.test.js` against a scratch bare remote (10 tests, mutation-checked).
+Tested without GitHub in `tests/trigger.test.js` against a scratch bare remote (18 tests, mutation-checked).
 
 ## Follow-ups, in the order Codex set
 
