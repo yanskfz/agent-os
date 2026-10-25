@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "agent-os",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Reusable skills and agents with fit-based routing, token-efficient handoffs, responsive design guards, project planning, web development, review, testing, deployment verification, and a project brief.",
   "author": { "name": "Yansz" },
   "repository": "https://github.com/yanskfz/agent-os",

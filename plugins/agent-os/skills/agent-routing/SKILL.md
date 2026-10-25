@@ -41,6 +41,13 @@ Use this default map:
 A secondary owner is allowed only when it supplies a distinct output that the
 primary owner cannot produce.
 
+### External owners
+
+Codex, Product Design, and the project owner work outside Claude Code. Claude Code
+cannot invoke them. When one of them is the required owner, record the decision or
+ambiguity in `BRIEF.md` (Open questions), return a compact handoff, and stop. Do not
+guess the missing requirement.
+
 ## 3. Build a compact handoff
 
 Provide:
@@ -65,7 +72,9 @@ Do not paste the full conversation when this artifact is sufficient.
 - QA does not fix.
 - Deployment verification does not deploy.
 - Product Design owns visual decisions, not production code.
-- Codex owns requirement authority and final routing decisions.
+- Codex or the project owner owns requirement authority and final routing decisions.
+  Claude Code records ambiguity in `BRIEF.md` and hands off externally when the
+  required owner is unavailable.
 
 ## 5. Apply the quality override
 

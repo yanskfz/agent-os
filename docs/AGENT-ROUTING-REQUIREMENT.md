@@ -23,7 +23,9 @@ to manage agent order or model intensity manually.
    - `qa-agent`: executed checks and acceptance-criteria verification; no fixes.
    - `deployment-assistant`: deployment/readiness verification; read-only.
    - Product Design: visual direction, prototype, and design QA.
-   - Codex: requirement authority, routing, orchestration, and final synthesis.
+   - Codex or the project owner: requirement authority, routing, orchestration, and final synthesis.
+     Claude Code cannot invoke Codex. When the required owner is unavailable, Claude Code
+     records the ambiguity in `BRIEF.md` (Open questions) and hands off externally.
 
 3. Do not duplicate work.
    - Do not plan a typo fix or a clearly scoped one-file change.

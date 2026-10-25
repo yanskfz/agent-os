@@ -9,6 +9,8 @@ This repo is the shared library (Claude Code plugin + templates). It is not a cl
 3. Never touch client project repos from here. Test only in `fixtures/` copies (the test harness does this).
 4. Never fake results. Report each verification level separately: created, validated, discovered, invoked, completed, passed.
 5. No secrets in the repo. No paid services. No deploy of this repo to Vercel.
+6. Requirements are decided in chat (Claude chat or Codex) or by the project owner, not here. If a requirement is
+   missing or ambiguous, write an Open question in `BRIEF.md`, hand off, and stop instead of guessing.
 
 ## Changing the plugin
 - Files: `plugins/agent-os/{skills,agents,hooks,scripts}`. Skills are `skills/<name>/SKILL.md` with `name` + `description` frontmatter.

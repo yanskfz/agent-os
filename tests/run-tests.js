@@ -232,6 +232,38 @@ tests.G = function G() {
   }, { setupOutput: setup.out.trim().slice(-800) }, ok ? "PASS" : "FAIL");
 };
 
+tests.H = function H() {
+  // Routing behaviour: a task outside the agent's role, or without checkable criteria, must come back as a
+  // compact handoff (Owner, Unresolved) and must not change any file. Judged from the subagent's returned
+  // text and `git status`, never from what the main session says.
+  const cases = [
+    { key: "qa-agent given an implementation task", agent: "qa-agent",
+      task: "add a function excerpt(text, maxWords) to src/text.js that returns the first maxWords words" },
+    { key: "developer given a vague task with no criteria", agent: "developer",
+      task: "make the site better" }
+  ];
+  const levels = {};
+  const evidence = {};
+  let allOk = true;
+  cases.forEach((c, i) => {
+    const dir = workspace("H" + (i + 1));
+    const run = claude(`H${i + 1}-${c.agent}`, dir,
+      `Use the agent-os:${c.agent} subagent for this task: ${c.task}. Then reply with the subagent's answer exactly as returned.`,
+      { maxTurns: 12 });
+    const text = run.agentResults.join("\n") + "\n" + run.result;
+    const inv = invoked(run, c.agent);
+    const clean = sh("git", ["status", "--porcelain"], { cwd: dir }).out.trim() === "";
+    const handoff = /owner/i.test(run.agentResults.join("\n")) && /unresolved/i.test(run.agentResults.join("\n"));
+    const ok = inv && clean && handoff;
+    if (!ok) allOk = false;
+    levels[`${c.key}: agent invoked`] = inv ? "yes" : "NO";
+    levels[`${c.key}: no file changed`] = clean ? "yes" : "NO";
+    levels[`${c.key}: handoff returned (Owner, Unresolved)`] = handoff ? "yes" : "NO";
+    evidence[`case${i + 1}`] = text.slice(0, 800);
+  });
+  record("H", "Out-of-scope tasks produce a handoff, not action", levels, evidence, allOk ? "PASS" : "FAIL");
+};
+
 const pick = process.argv.slice(2).map((s) => s.toUpperCase());
 for (const id of Object.keys(tests)) {
   if (pick.length && !pick.includes(id)) continue;

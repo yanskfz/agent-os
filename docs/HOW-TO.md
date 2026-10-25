@@ -51,7 +51,7 @@ Not every task needs every agent. A typo fix needs none.
 
 ## 4. Run validation
 - In a project: "Run the testing-and-validation skill." It runs the project's tests or, for static sites,
-  desktop and phone screenshots with one OK/FAIL line each.
+  screenshots at nine viewports (320 to 1920 px) with one OK/FAIL line each.
 - For agent-os itself: "Run `node tests/run-tests.js` and update TEST-RESULTS.md." (takes ~10 minutes).
 
 ## 5. Update the shared library
