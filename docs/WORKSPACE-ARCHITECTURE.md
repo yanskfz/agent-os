@@ -62,6 +62,9 @@ Events are written before state. A crash between the two leaves an extra event l
 - At most 3 worker runs per goal. The fourth `dispatch` ends in `BLOCKED` (kind `budget`) and never starts. Neither cap can be lifted
   by `unblock`; stop and set a new goal.
 - Dollar caps and model mapping are out of scope (separate benchmark branch).
+- The evidence check is a format check only. It does not prove that the commit, PR, CI run, file or screenshot exists, and it must
+  not be described as proof. Resolving references (marking them `verified` or `unverified`) is a later, optional verifier or CI gate
+  so that `record` stays dependency-free and works without credentials.
 
 ## Surface adapter contract (2D, 3D: not implemented)
 
@@ -78,3 +81,12 @@ and the goal check, not changing the state machine.
 
 `node tests/workspace.test.js` (16 tests, dependency-free, no model). They drive the real CLI against scratch directories and
 validate every written state and event against the schemas.
+
+CI: `.github/workflows/workspace-tests.yml` runs the same command on Node 22 for pull requests to, and pushes on, `feat/agent-orchestrator`,
+with `contents: read` only. Making it a required status is a repository branch-protection setting, not part of the workflow file.
+
+## Follow-ups, in the order Codex set
+
+1. CI job (above).
+2. Main-session delegation routing: a test that inspects the delegated prompt and the repository diff.
+3. Real event trigger: a GitHub Action on `workflow_dispatch` or `repository_dispatch` only (no cron), least privilege, no merge.
