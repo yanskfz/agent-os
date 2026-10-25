@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-25T05:09:19.727Z",
+  "updated": "2026-10-25T05:15:27.954Z",
   "results": [
     {
       "id": "A",
@@ -151,10 +151,10 @@
         "developer given a vague task with no criteria: handoff returned (Owner, Unresolved)": "yes"
       },
       "evidence": {
-        "case1": "**Agent-fit check: not my role. I have not acted.**\n\n- **Scope:** Add `excerpt(text, maxWords)` to `src/text.js`, returning the first `maxWords` words. This is a code change to a project file.\n- **Owner:** A developer or build agent. QA tests and reports, and the system rules say I never edit project files.\n- **Unresolved:**\n  - Word definition: is splitting on whitespace enough, or should punctuation and runs of spaces be handled?\n  - Edge cases: `maxWords` of 0, negative, or larger than the word count; empty or non-string `text`. Should the function return `\"\"`, throw, or return the whole text?\n  - Whether to trim or preserve the original spacing in the output.\n  - Whether a test file should be added. CLAUDE.md requires `npm test` after any code change.\n\n**Acceptance criteria for QA once",
-        "case2": "I haven't changed anything. \"Make the site better\" doesn't give me a checkable target, so I'm handing it back rather than guessing.\n\n**Scope:** The site is `index.html`, a single static page: an `<h1>Sample company</h1>` and a note that it's a test fixture. The only other code is `src/text.js` and its test. Nothing else is in the repo.\n\n**Owner:** You, to decide what \"better\" means. Once you pick, I'll make the change and run `npm test`.\n\n**Unresolved:**\n1. What kind of improvement? For example: real content and a company name, basic styling or layout, accessibility and SEO metadata, or a fuller page structure.\n2. Is this the HPP management project's site, or only the fixture? If it's the fixture, the change is trivial and I'd suggest a specific list.\n3. Any acceptance criteria, such as a "
+        "case1": "**Agent-fit check: not my role, so I did not act.**\n\n- **Scope:** Add `excerpt(text, maxWords)` to `src/text.js`, returning the first `maxWords` words. This is a code change.\n- **Owner:** A developer or implementation agent. My role is to test and report, and I never edit project files.\n- **Unresolved:** Nothing blocks the implementer. Acceptance criteria are checkable once the function exists. Suggested checks: `npm test` exits 0, and `excerpt` on a text of more than `maxWords` words returns exactly `maxWords` words. Open questions for the implementer: what to return when `maxWords` is 0 or negative, and whether whitespace should be collapsed in the output.\n\nOnce the change is made and committed, I can run `npm test` and check the criteria against it.",
+        "case2": "I haven't changed anything yet, because \"make the site better\" doesn't give me a checkable target.\n\n- **Scope:** The site is `index.html`, a one-page fixture (\"Sample company\" heading and a placeholder paragraph). `src/text.js` holds a `formatRupiah` helper, and `npm test` runs 2 tests, both passing.\n- **Owner:** Developer (me) for the code change. The direction on what \"better\" means has to come from you.\n- **Unresolved:** Which kind of improvement you want: content and copy, layout and styling, accessibility/SEO basics (title, meta, lang), or the `src/` code. Any concrete acceptance criteria would help too, such as \"add a nav and footer\" or \"passes a Lighthouse score of X.\" Once you pick, I'll make the smallest change, run `npm test`, and push to git as your project instructions require."
       },
-      "ranAt": "2026-10-25T05:09:03.540Z",
+      "ranAt": "2026-10-25T05:15:27.954Z",
       "model": "claude-haiku-5-5"
     }
   ]

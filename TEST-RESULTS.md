@@ -9,6 +9,9 @@ session event stream, never from what the model says. Raw per-run details: `test
 2. The three failures were diagnosed (see "Failures found and fixed"), the harness was corrected, and C, E, H were rerun: PASS.
 3. G was run afterwards against the pushed branch `yanskfz/agent-os#feat/routing-cost-design-guards`: PASS.
 So the current PASS state combines three runs. Every result is a single run on one model.
+4. After the Codex delegation rule was added to `CLAUDE.md`, `claude plugin validate` (both levels) passed again and
+   H was rerun once more: PASS (two consecutive H passes). This rerun cannot exercise the new rule: H runs the agent
+   directly in a fixture copy, while the rule governs how a main session delegates (see the verification table).
 
 ## Verification levels
 
@@ -21,6 +24,7 @@ So the current PASS state combines three runs. Every result is a single run on o
 | Tasks completed | done | plan has all sections (B); real file change (C); planted defect found (D); real test verdict (E) |
 | Tests passed | done | fixture `npm test` re-run by the harness after C and after the D fix |
 | Routing preamble changes behaviour | **partly tested** | Test H, 2 cases, one run each: `qa-agent` given an implementation task and `developer` given a vague task both returned a handoff (Owner, Unresolved) and changed no file. Run as the agent directly (`--agent`); delegation through a main session is not covered, and an earlier version of H showed a main session can rewrite a vague task into detailed steps before delegating |
+| Delegation rule in `CLAUDE.md` ("preserve the user's task; ambiguity needs a handoff, except for brief and planner") | **created, not tested** | No test runs a main session that delegates a vague task and then inspects the prompt the subagent received. Planned for the orchestrator branch. The rule only applies in this repo until it is shipped through a skill or template |
 | `agent-routing` skill loaded by agents | **not observed** | 0 Skill-tool calls in the B-E logs; the preamble no longer references the skill (it is a 3-line inline check) |
 | Reuse in another project | done | second empty project, plugin installed from a local checkout, 7/7 skills, 5/5 agents, no app code copied (F, v0.2.1) |
 | Cloud install path | done | the exact `docs/cloud-setup-script.sh`, from GitHub branch `feat/routing-cost-design-guards`, loads agent-os v0.2.1 in a new session (G) |
@@ -57,6 +61,9 @@ One run each.
 | H1. QA handoff | 0.0023 |
 | H2. Developer handoff | 0.0036 |
 | Total | 0.0479 |
+
+H was rerun once after the `CLAUDE.md` patch: H1 0.0011, H2 0.0019, about half of the first H run (0.0023, 0.0036) for the
+same prompts. The table above keeps the first-run values.
 
 The first baseline (v0.2.0) priced Test A at 0.0103; the same prompt cost 0.0037 here. That is a 2.8x difference from
 run to run on an identical task, so single-run costs are only a scale indicator. A model benchmark needs several runs

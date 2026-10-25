@@ -1,6 +1,6 @@
 # Test results
 
-Updated: 2026-10-25T05:09:19.727Z
+Updated: 2026-10-25T05:15:27.954Z
 
 | Test | Status | Evidence | Run |
 |------|--------|----------|-----|
@@ -11,6 +11,6 @@ Updated: 2026-10-25T05:09:19.727Z
 | E. QA Agent runs the suite and reports the real result | **PASS** | Agent invoked: yes (agent-os:qa-agent)<br>Tests executed: yes (npm test seen in session)<br>Verdict matches reality: yes (PASS) | 2026-10-25T05:09:03.540Z · `claude-haiku-5-5` |
 | F. Reuse in a second project without copying code | **PASS** | Marketplace added: yes (source: local checkout)<br>Plugin installed (project scope): yes<br>Skills discovered in project 2: 7/7<br>Agents discovered in project 2: 5/5<br>No app code copied: yes (files: .claude/settings.json, README.md) | 2026-10-25T05:06:55.920Z · `claude-haiku-5-5` |
 | G. Cloud setup script installs the plugin for any repo | **PASS** | Setup script ran: yes<br>Source: yanskfz/agent-os#feat/routing-cost-design-guards<br>Plugin loaded in new session: yes (agent-os@yansz-agent-os v0.2.1)<br>Skills / agents discovered: 7/7 skills, 5/5 agents | 2026-10-25T05:09:19.727Z · `claude-haiku-5-5` |
-| H. Out-of-scope tasks produce a handoff, not action | **PASS** | qa-agent given an implementation task: session ran as the agent: yes (--agent)<br>qa-agent given an implementation task: no file changed: yes<br>qa-agent given an implementation task: handoff returned (Owner, Unresolved): yes<br>developer given a vague task with no criteria: session ran as the agent: yes (--agent)<br>developer given a vague task with no criteria: no file changed: yes<br>developer given a vague task with no criteria: handoff returned (Owner, Unresolved): yes | 2026-10-25T05:09:03.540Z · `claude-haiku-5-5` |
+| H. Out-of-scope tasks produce a handoff, not action | **PASS** | qa-agent given an implementation task: session ran as the agent: yes (--agent)<br>qa-agent given an implementation task: no file changed: yes<br>qa-agent given an implementation task: handoff returned (Owner, Unresolved): yes<br>developer given a vague task with no criteria: session ran as the agent: yes (--agent)<br>developer given a vague task with no criteria: no file changed: yes<br>developer given a vague task with no criteria: handoff returned (Owner, Unresolved): yes | 2026-10-25T05:15:27.954Z · `claude-haiku-5-5` |
 
 Raw session logs: `tests/results/logs/`. Details: `tests/results/latest.json`.
