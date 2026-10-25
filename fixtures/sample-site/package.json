@@ -1,0 +1,6 @@
+{
+  "name": "sample-site",
+  "private": true,
+  "description": "Isolated test fixture for agent-os. Not a real project.",
+  "scripts": { "test": "node --test" }
+}
