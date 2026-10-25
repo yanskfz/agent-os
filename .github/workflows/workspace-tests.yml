@@ -4,9 +4,9 @@ name: Workspace tests
 # Needs no secrets, model, network service, GitHub API or deployment access.
 on:
   pull_request:
-    branches: [feat/agent-orchestrator]
+    branches: [main, feat/agent-orchestrator]
   push:
-    branches: [feat/agent-orchestrator]
+    branches: [main, feat/agent-orchestrator]
 
 permissions:
   contents: read
