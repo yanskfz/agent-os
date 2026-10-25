@@ -30,6 +30,8 @@ visual 2D and 3D work are later surfaces behind an adapter contract.
 - Terminal/code is the first implementation surface. 2D/3D are adapter contracts only in this slice.
 - The orchestrator may open a PR but never merge automatically.
 - Initial limits: one focused retry per failed gate and three worker runs per goal.
+- Session resource limits are hard: optimize Claude Code's four-hour reset window and weekly reset budget, and apply the same discipline to Codex.
+- Before a session/context window is constrained, persist a checkpoint and hand off.
 - Benchmarking and dollar/model mapping are out of scope for this slice.
 
 ## Required plan
