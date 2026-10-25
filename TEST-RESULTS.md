@@ -134,3 +134,16 @@ Deterministic: no model, no network, no cost. Separate from tests A-H. Run on 20
 | Passed | 16 of 16 |
 | Mutation check | raising the run cap, raising the retry cap, accepting unevidenced `pass` and allowing `merge` each made at least one test fail; the original code passes |
 | Not run | `claude plugin validate` and tests A-H (the plugin and `tests/run-tests.js` were not changed); no GitHub Action or scheduled trigger exists yet, so the orchestrator has only been driven by the tests |
+
+## Event trigger (`node tests/trigger.test.js`)
+
+Deterministic and free: `workspace/trigger.sh` runs against a scratch bare git remote, with no GitHub, model or network access. Node 22, git 2.43.
+
+| Level | Result |
+|-------|--------|
+| Created | `.github/workflows/workspace-event.yml`, `workspace/trigger.sh`, `workspace/validate.js`, `tests/trigger.test.js`, docs section |
+| Passed locally | 10 of 10 trigger tests; 16 of 16 workspace tests (they now share `validate.js`) |
+| Covered | idle writes and pushes nothing; first event creates an orphan `workspace-*` branch with only state; later events append; a rejected event exits 2 and changes nothing; `BLOCKED` raises a warning; only `workspace-*` branches can be written; invalid written state is never pushed; the push is never forced and keeps another writer's commit; the workflow has only the two dispatch triggers, `permissions: {}` plus job `contents: write`, no pull-requests permission, no merge, and no expression inside a `run:` |
+| Mutation check | 7 deliberate breaks (prefix guard removed, rejection exits 0, force push, validation removed, cron added, `pull-requests: write` added, event interpolated into `run:`) each failed at least one test |
+| **Not run on GitHub** | GitHub does not register a `workflow_dispatch` or `repository_dispatch` workflow until it is on the default branch (`main`): dispatching `workspace-event.yml` from the PR branch returned 404. So the Action wiring (expression evaluation, token push, run summary and annotations) is `not checked` until the first dispatch after merge |
+| Not covered | the `actor` in a payload is not authenticated; dropping a third queued event is GitHub's concurrency behaviour and was not observed |
