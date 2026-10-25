@@ -145,7 +145,7 @@ Deterministic and free: `workspace/trigger.sh` runs against a scratch bare git r
 | Passed locally | 10 of 10 trigger tests; 16 of 16 workspace tests (they now share `validate.js`) |
 | Covered | idle writes and pushes nothing; first event creates an orphan `workspace-*` branch with only state; later events append; a rejected event exits 2 and changes nothing; `BLOCKED` raises a warning; only `workspace-*` branches can be written; invalid written state is never pushed; the push is never forced and keeps another writer's commit; the workflow has only the two dispatch triggers, `permissions: {}` plus job `contents: write`, no pull-requests permission, no merge, and no expression inside a `run:` |
 | Mutation check | 7 deliberate breaks (prefix guard removed, rejection exits 0, force push, validation removed, cron added, `pull-requests: write` added, event interpolated into `run:`) each failed at least one test |
-| **Not run on GitHub** | GitHub does not register a `workflow_dispatch` or `repository_dispatch` workflow until it is on the default branch (`main`): dispatching `workspace-event.yml` from the PR branch returned 404. So the Action wiring (expression evaluation, token push, run summary and annotations) is `not checked` until the first dispatch after merge |
+| **Not run on GitHub** | GitHub does not register a `workflow_dispatch` or `repository_dispatch` workflow until it is on the default branch (`main`): dispatching `workspace-event.yml` from the PR branch returned 404. Written before the first live dispatch; now verified, see "First live dispatch" below |
 | Not covered | the `actor` in a payload is not authenticated; dropping a third queued event is GitHub's concurrency behaviour and was not observed |
 
 ## Event trigger authority (`node tests/trigger.test.js`, `node tests/workspace.test.js`)
@@ -158,5 +158,25 @@ Deterministic and free, same setup as the event trigger section above.
 | Passed locally | 18 of 18 trigger tests; 18 of 18 workspace tests |
 | Covered | a sender not on the allowlist cannot act as `codex`, `project-owner` or `orchestrator` (exit 6, nothing written); no sender, missing or malformed allowlist, and a `triggering_actor` that is not allowed all fail closed; an allowlisted sender can only act as the actors listed for it; logins match case-insensitively; the recorded `sender` is the verified login even if the payload names another; idle needs no authority; non-object events exit 2; the sender comes from `github.actor` and never from inputs or the payload; the job is limited to the default branch; the initial allowlist is `yanskfz` only |
 | Mutation check | 8 deliberate breaks (authorize call removed, sender taken from inputs, payload sender wins, case-sensitive logins, triggering actor ignored, actor claim not checked, fail open on a bad allowlist, default-branch guard removed) each failed at least one test |
-| **Not run on GitHub** | the Action wiring (expression evaluation, `github.triggering_actor` value, token push, annotations) is `not checked` until the first dispatch after the workflow is on `main` |
+| **Not run on GitHub** | written before the first live dispatch; the Action wiring is now verified, see "First live dispatch" below. Still not covered live: a sender who is not on the allowlist (only `yanskfz` exists) |
 | Not covered | a collaborator who can push a branch can edit the workflow and allowlist on their own branch and run that copy; closing that needs repository settings (restricting who can push, or a protected environment), which Codex left out of the MVP |
+
+## First live dispatch (GitHub Actions, 2026-10-25)
+
+Workflow `workspace-event.yml` on `main` (merge commit `1c69e70`), sent with `workflow_dispatch --ref main` and one `repository_dispatch`, all to the scratch state branch `workspace-scratch`. Sender: `yanskfz`. Evidence is read back from the runs, their annotations and the branch through the GitHub API.
+
+| # | Event | Run | Expected | Observed |
+|---|-------|-----|----------|----------|
+| 1 | idle (no event) | 40169289565 | success, nothing written | success; `EVENT_JSON: null`, `SENDER` and `TRIGGERING_ACTOR` = `yanskfz` set by GitHub; no `workspace-scratch` branch created |
+| 2 | `goal` as `project-owner` | 40169319711 | recorded, task verbatim, verified sender | success; orphan commit by `github-actions[bot]` with no parent; only `docs/HANDOFF.md`, `workspace/events.jsonl`, `workspace/state.json`; `e-0001` has `sender: yanskfz`; state `HANDOFF`; the two-line task is identical in `state.json` and `HANDOFF.md` |
+| 3 | duplicate `goal` | 40169354648 | fails, nothing written | failure, exit 2; annotation `event rejected: ... wrong_state ... goal is not accepted in HANDOFF`; branch tip unchanged (`0a697b7`), still 1 event |
+| 4 | `block` (kind `access`) | 40169375169 | success with a warning | success; annotation `workspace is BLOCKED: {"action":"escalate",...}`; `e-0002`, state `BLOCKED` with the reason |
+| 5 | `checkpoint` via `repository_dispatch` | 40169405373 | success, event and branch taken from `client_payload` | success; `e-0003` recorded on `workspace-scratch`; checkpoint stored; state still `BLOCKED` |
+
+Verified live: both triggers, the `EVENT_JSON` expression (`null` for idle), the sender values from GitHub, the token push of an orphan state branch (so no ruleset is blocking it), the default-branch guard (runs executed on `main`), the rejection and BLOCKED evidence, and the verified `sender` in `events.jsonl`.
+
+Not verified live:
+- **Rejection of a sender who is not on the allowlist or an actor claim they may not make**: only `yanskfz` exists, so it was tested locally only (18 trigger tests, 8 mutation breaks).
+- **Dropped third queued event**: runs were sent one at a time.
+- **The idle run's job summary page**: the step summary is not available through the API; the idle result is shown by the branch not being created.
+- `workspace-scratch` is left in place as evidence; delete it when no longer needed.

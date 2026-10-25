@@ -82,7 +82,7 @@ and the goal check, not changing the state machine.
 `node tests/workspace.test.js` (18 tests, dependency-free, no model) and `node tests/trigger.test.js` (18 tests, local git only). They drive the real CLI against scratch directories and
 validate every written state and event against the schemas.
 
-CI: `.github/workflows/workspace-tests.yml` runs the same command on Node 22 for pull requests to, and pushes on, `feat/agent-orchestrator`,
+CI: `.github/workflows/workspace-tests.yml` runs the same command on Node 22 for pull requests to, and pushes on, `main` and `feat/agent-orchestrator`,
 with `contents: read` only. Making it a required status is a repository branch-protection setting, not part of the workflow file.
 
 ## Event trigger (GitHub Action)
