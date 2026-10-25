@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "state": "WORKING",
+  "state": "DONE",
   "goal": "g-0001",
   "surface": "terminal",
   "task": "Define requirements and an approval-ready design direction for yanskfz/msj-profiles, preserving the repository brief and hard constraints. Do not implement production code yet.",
@@ -9,32 +9,44 @@
     {
       "id": "c1",
       "text": "BRIEF.md requirements and open questions are explicit without invented business facts",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "file:BRIEF.md@a9e217761c2378cdc47a4fb69fdcbd1232e1ce69",
+        "file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081"
+      ]
     },
     {
       "id": "c2",
       "text": "Acceptance criteria cover content, design, accessibility, and approval gates",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081"
+      ]
     },
     {
       "id": "c3",
       "text": "A mockup direction is defined for the existing seven-slide carousel",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081"
+      ]
     },
     {
       "id": "c4",
       "text": "Missing client data remains placeholder-safe",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "file:BRIEF.md@a9e217761c2378cdc47a4fb69fdcbd1232e1ce69",
+        "file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081"
+      ]
     },
     {
       "id": "c5",
       "text": "The next handoff to Product Design is compact and checkable",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081"
+      ]
     }
   ],
   "runs": 1,
@@ -47,5 +59,5 @@
   "blocked": null,
   "checkpoint": null,
   "pr": null,
-  "updated": "2026-10-25T06:45:10.973Z"
+  "updated": "2026-10-25T06:45:39.209Z"
 }

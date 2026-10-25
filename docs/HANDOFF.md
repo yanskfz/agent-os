@@ -1,6 +1,6 @@
 # Active Handoff
 
-Status: WORKING
+Status: DONE
 Goal: g-0001
 Owner: codex
 Surface: terminal
@@ -12,15 +12,15 @@ Define requirements and an approval-ready design direction for yanskfz/msj-profi
 
 ## Acceptance criteria
 
-- [not checked] c1: BRIEF.md requirements and open questions are explicit without invented business facts
-- [not checked] c2: Acceptance criteria cover content, design, accessibility, and approval gates
-- [not checked] c3: A mockup direction is defined for the existing seven-slide carousel
-- [not checked] c4: Missing client data remains placeholder-safe
-- [not checked] c5: The next handoff to Product Design is compact and checkable
+- [pass] c1: BRIEF.md requirements and open questions are explicit without invented business facts (evidence: file:BRIEF.md@a9e217761c2378cdc47a4fb69fdcbd1232e1ce69, file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081)
+- [pass] c2: Acceptance criteria cover content, design, accessibility, and approval gates (evidence: file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081)
+- [pass] c3: A mockup direction is defined for the existing seven-slide carousel (evidence: file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081)
+- [pass] c4: Missing client data remains placeholder-safe (evidence: file:BRIEF.md@a9e217761c2378cdc47a4fb69fdcbd1232e1ce69, file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081)
+- [pass] c5: The next handoff to Product Design is compact and checkable (evidence: file:docs/REQUIREMENTS.md@1eacbc3b70f30d83493a4ed5101ab45b2d2f5081)
 
 ## Next
 
-{"action":"await_report","owner":"codex"}
+{"action":"open_pr"}
 
 ## Rules
 
