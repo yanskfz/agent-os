@@ -28,6 +28,20 @@ requires an Open question and handoff rather than guessing.
 For requirements and planning work, ambiguity is an input: record assumptions,
 Open questions, and checkable acceptance criteria.
 
+## Resource optimization hard rule
+
+Token, context, session-time, and weekly usage efficiency are first-class requirements.
+Use the smallest suitable agent, model/effort, context, and number of runs.
+
+- Use one primary owner and the narrowest relevant files.
+- Do not call an agent just because it exists or duplicate a check.
+- Do not poll while idle or keep a model alive without a concrete event.
+- Prefer compact handoffs and checkpoint artifacts over transcript replay.
+- Escalate reasoning only for ambiguity, architecture, debugging, security, or failed gates.
+- Before a session or context window becomes constrained, persist a checkpoint and hand off.
+- Claude Code's four-hour reset window and weekly reset budget are finite resources.
+  Codex follows the same discipline: no open-ended exploration or repeated reads.
+
 ## Shared state
 
 - `BRIEF.md` is the project state and requirement source.
