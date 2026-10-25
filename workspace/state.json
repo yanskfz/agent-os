@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "state": "HANDOFF",
+  "goal": "g-0001",
+  "surface": "terminal",
+  "task": "Verify the approved new MSJ Profiles appearance in the Vercel preview and review PR #3 before merge. Do not merge or deploy.",
+  "owner": "qa",
+  "criteria": [
+    {
+      "id": "c1",
+      "text": "The Vercel preview loads the approved appearance",
+      "status": "not checked",
+      "evidence": []
+    },
+    {
+      "id": "c2",
+      "text": "The seven-slide carousel navigation works with arrows, dots, keyboard, and placeholder-safe video/contact states",
+      "status": "not checked",
+      "evidence": []
+    },
+    {
+      "id": "c3",
+      "text": "The layout is readable and usable at desktop and phone widths",
+      "status": "not checked",
+      "evidence": []
+    },
+    {
+      "id": "c4",
+      "text": "No real client data is exposed and the approval notice remains visible",
+      "status": "not checked",
+      "evidence": []
+    },
+    {
+      "id": "c5",
+      "text": "The QA result and any unresolved findings are compactly handed off for merge review",
+      "status": "not checked",
+      "evidence": []
+    }
+  ],
+  "runs": 0,
+  "limits": {
+    "maxRuns": 3,
+    "maxRetriesPerGate": 1
+  },
+  "retries": {},
+  "changes": [],
+  "blocked": null,
+  "checkpoint": null,
+  "pr": null,
+  "updated": "2026-10-25T07:02:58.936Z"
+}
