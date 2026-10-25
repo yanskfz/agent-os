@@ -26,3 +26,5 @@ jobs:
           node-version: "22"
       - name: Run workspace tests
         run: node tests/workspace.test.js
+      - name: Run trigger tests
+        run: node tests/trigger.test.js

@@ -1,0 +1,49 @@
+name: Workspace event
+
+# Records one orchestrator event on a state branch. It runs only when someone sends an event (workflow_dispatch or
+# repository_dispatch): there is no schedule, no push or pull_request trigger, and no polling. With no event it exits idle.
+#
+# Send one:  gh workflow run workspace-event.yml -f state_branch=workspace-scratch -f event='{"type":"goal",...}'
+#            POST /repos/{owner}/{repo}/dispatches  {"event_type":"workspace-event","client_payload":{"event":{...}}}
+# The event is passed through env, never interpolated into a shell command.
+on:
+  workflow_dispatch:
+    inputs:
+      event:
+        description: 'One orchestrator event as JSON (empty means idle)'
+        required: false
+        default: ''
+      state_branch:
+        description: 'State branch; must start with workspace-'
+        required: false
+        default: 'workspace-state'
+  repository_dispatch:
+    types: [workspace-event]
+
+permissions: {}
+
+# One run at a time per state branch. GitHub keeps one running and one pending run; a third is cancelled, which shows
+# on the Actions page as a cancelled run: resend that event.
+concurrency:
+  group: workspace-event-${{ inputs.state_branch || github.event.client_payload.state_branch || 'workspace-state' }}
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # contents: write only to push the state branch. No pull-requests permission, so this job cannot merge or open PRs.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Record event
+        env:
+          EVENT_JSON: ${{ github.event_name == 'workflow_dispatch' && inputs.event || toJSON(github.event.client_payload.event) }}
+          STATE_BRANCH: ${{ inputs.state_branch || github.event.client_payload.state_branch || 'workspace-state' }}
+          WHO: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: sh workspace/trigger.sh
