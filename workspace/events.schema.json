@@ -13,6 +13,7 @@
     "from": { "enum": ["IDLE", "INTAKE", "TRIAGE", "HANDOFF", "WORKING", "EVIDENCE", "GATE", "DONE", "RETRY", "REROUTE", "BLOCKED", "STOPPED"] },
     "to": { "enum": ["IDLE", "INTAKE", "TRIAGE", "HANDOFF", "WORKING", "EVIDENCE", "GATE", "DONE", "RETRY", "REROUTE", "BLOCKED", "STOPPED"] },
     "transitions": { "type": "array", "items": { "type": "string", "pattern": "^[A-Z]+>[A-Z]+$" } },
-    "note": { "type": ["string", "null"] }
+    "note": { "type": ["string", "null"] },
+    "sender": { "type": "string", "minLength": 1 }
   }
 }

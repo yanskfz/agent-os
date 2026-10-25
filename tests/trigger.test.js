@@ -40,7 +40,8 @@ function scratch() {
     fs.writeFileSync(summary, "");
     const r = spawnSync("sh", ["workspace/trigger.sh"], { cwd: work, encoding: "utf8",
       env: { ...process.env, EVENT_JSON: event === undefined ? "" : typeof event === "string" ? event : JSON.stringify(event),
-        STATE_BRANCH: "workspace-scratch", WHO: "tester", RUN_URL: "http://example/run/1", GITHUB_STEP_SUMMARY: summary, ...env } });
+        STATE_BRANCH: "workspace-scratch", SENDER: "yanskfz", TRIGGERING_ACTOR: "yanskfz", WHO: "tester", RUN_URL: "http://example/run/1",
+        GITHUB_STEP_SUMMARY: summary, ...env } });
     return { code: r.status, out: r.stdout, summary: fs.readFileSync(summary, "utf8") };
   };
   return { root, remote, work, refs, show, run };
@@ -149,6 +150,78 @@ test("a state that fails validation is never pushed", () => {
   assert.equal(s.refs(), before);
 });
 
+const asActor = (actor, extra = {}) => ({ ...goal, actor, ...extra });
+
+test("authority comes from the GitHub sender: someone not on the allowlist cannot act as codex or the project owner", () => {
+  const s = scratch();
+  const before = s.refs();
+  for (const claimed of ["codex", "project-owner", "orchestrator"]) {
+    const r = s.run(asActor(claimed), { SENDER: "mallory", TRIGGERING_ACTOR: "mallory" });
+    assert.equal(r.code, 6, claimed);
+    assert.match(r.summary, /not authorized/);
+    assert.match(r.summary, /sender_not_allowed/);
+    assert.match(r.out, /::error::event not authorized/);
+  }
+  assert.equal(s.refs(), before, "nothing written, nothing pushed");
+  assert.equal(s.run(goal).code, 0, "the allowlisted owner still can");
+});
+
+test("fail closed: no sender, missing or malformed allowlist, or a re-run by someone else is rejected", () => {
+  const s = scratch();
+  const before = s.refs();
+  assert.equal(s.run(goal, { SENDER: "", TRIGGERING_ACTOR: "" }).code, 6, "no sender");
+  assert.equal(s.run(goal, { TRIGGERING_ACTOR: "mallory" }).code, 6, "triggering actor not on the list even though the original actor is");
+  assert.equal(s.run(goal, { ALLOWLIST: path.join(s.root, "missing.json") }).code, 6, "missing allowlist");
+  const bad = path.join(s.root, "bad.json");
+  for (const body of ["{not json", "{}", '{"version":2,"senders":{}}', '{"version":1,"senders":{"yanskfz":{}}}', "[]"]) {
+    fs.writeFileSync(bad, body);
+    assert.equal(s.run(goal, { ALLOWLIST: bad }).code, 6, body);
+  }
+  assert.equal(s.refs(), before);
+});
+
+test("an allowlisted sender can only act as the actors listed for them", () => {
+  const s = scratch();
+  const narrow = path.join(s.root, "narrow.json");
+  fs.writeFileSync(narrow, JSON.stringify({ version: 1, senders: { yanskfz: { actors: ["claude-code", "orchestrator"] }, codexbot: { actors: ["codex"] } } }));
+  const before = s.refs();
+  const r = s.run(asActor("codex"), { ALLOWLIST: narrow });
+  assert.equal(r.code, 6);
+  assert.match(r.summary, /actor_not_allowed/);
+  assert.equal(s.refs(), before);
+  assert.equal(s.run(asActor("codex"), { ALLOWLIST: narrow, SENDER: "codexbot", TRIGGERING_ACTOR: "codexbot" }).code, 0, "the sender that may act as codex can");
+  assert.equal(s.run({ type: "dispatch", actor: "claude-code" }, { ALLOWLIST: narrow, SENDER: "codexbot", TRIGGERING_ACTOR: "codexbot" }).code, 6, "and cannot act as anyone else");
+});
+
+test("logins are matched case-insensitively, as GitHub treats them", () => {
+  const s = scratch();
+  assert.equal(s.run(goal, { SENDER: "YansKFZ", TRIGGERING_ACTOR: "yanskfz" }).code, 0);
+});
+
+test("the recorded sender is the verified one, whatever the payload says", () => {
+  const s = scratch();
+  s.run({ ...goal, sender: "codex-impostor" });
+  s.run({ ...dispatch, sender: "someone-else" });
+  const events = s.show("workspace-scratch", "workspace/events.jsonl").trim().split("\n").map(JSON.parse);
+  assert.deepEqual(events.map((e) => e.sender), ["yanskfz", "yanskfz"]);
+  assert.match(s.run(dispatch).summary, /not authorized|rejected|wrong_state/, "sanity: a third dispatch is refused by the state machine");
+  // A payload that names another sender does not help an unlisted user either.
+  const r = s.run({ ...goal, sender: "yanskfz" }, { SENDER: "mallory", TRIGGERING_ACTOR: "mallory" });
+  assert.equal(r.code, 6);
+});
+
+test("idle stays idle for everyone: no event is neither authorized nor written", () => {
+  const s = scratch();
+  const before = s.refs();
+  for (const e of [undefined, "null", "  "]) assert.equal(s.run(e, { SENDER: "mallory", TRIGGERING_ACTOR: "mallory" }).code, 0);
+  assert.equal(s.refs(), before);
+});
+
+test("a non-object event is rejected before any authority is considered", () => {
+  const s = scratch();
+  for (const e of ['"codex"', "42", "[1]", "{\"type\":\"goal\"}"]) assert.equal(s.run(e).code, 2, e);
+});
+
 test("pushes are never forced and never go to a code branch", () => {
   none(SCRIPT, /git push[^\n]*(--force|--force-with-lease|\s-f\b)|\+HEAD:|\+refs\//, "push must be a plain fast-forward push");
   const s = scratch();
@@ -183,9 +256,18 @@ test("workflow: explicit events only, least privilege, no merge, event never int
   assert.match(WORKFLOW, /EVENT_JSON: \$\{\{/);
 });
 
+test("workflow: the sender comes from GitHub and only the default branch's copy runs", () => {
+  assert.match(WORKFLOW, /SENDER: \$\{\{ github\.actor \}\}/);
+  assert.match(WORKFLOW, /TRIGGERING_ACTOR: \$\{\{ github\.triggering_actor \}\}/);
+  assert.match(WORKFLOW, /if: github\.ref == format\('refs\/heads\/\{0\}', github\.event\.repository\.default_branch\)/);
+  assert.doesNotMatch(code(WORKFLOW), /SENDER:[^\n]*(inputs|client_payload)/, "the sender never comes from the payload or inputs");
+  const allow = JSON.parse(fs.readFileSync(path.join(ROOT, "workspace/allowed-senders.json"), "utf8"));
+  assert.deepEqual(Object.keys(allow.senders), ["yanskfz"], "initial allowlist is the owner only");
+});
+
 test("workflow and script agree on the contract", () => {
   assert.match(SCRIPT, /workspace-\*\)/);
   assert.match(WORKFLOW, /default: 'workspace-state'/);
   assert.match(WORKFLOW, /types: \[workspace-event\]/);
-  for (const name of ["EVENT_JSON", "STATE_BRANCH", "WHO", "RUN_URL"]) assert.match(WORKFLOW, new RegExp(`${name}:`));
+  for (const name of ["EVENT_JSON", "STATE_BRANCH", "SENDER", "TRIGGERING_ACTOR", "WHO", "RUN_URL"]) assert.match(WORKFLOW, new RegExp(`${name}:`));
 });

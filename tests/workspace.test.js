@@ -293,3 +293,30 @@ test("end to end on a scratch project: goal, work, retry, evidence, DONE, PR act
   assert.equal(goal(dir, 1, { task: "Second goal" }).code, 0, "a finished goal frees the workspace");
   assert.equal(status(dir).goal, "g-0002");
 });
+
+test("authorize: the sender, not the payload, decides who may act as codex or the project owner", () => {
+  const { authorize } = require(path.join(ROOT, "workspace/authorize.js"));
+  const allow = { version: 1, senders: { Owner: { actors: ["project-owner", "codex"] }, worker: { actors: ["claude-code"] } } };
+  const ev = (actor, extra = {}) => ({ type: "goal", actor, ...extra });
+  assert.deepEqual(authorize(allow, ["owner", "OWNER"], ev("codex", { sender: "forged" })).event, { type: "goal", actor: "codex", sender: "owner" });
+  assert.equal(authorize(allow, ["worker"], ev("codex")).code, "actor_not_allowed");
+  assert.equal(authorize(allow, ["worker"], ev("project-owner")).code, "actor_not_allowed");
+  assert.equal(authorize(allow, ["stranger"], ev("claude-code")).code, "sender_not_allowed");
+  assert.equal(authorize(allow, ["owner", "worker"], ev("codex")).code, "actor_not_allowed", "every reported sender must be allowed to claim the actor");
+  assert.equal(authorize(allow, [], ev("codex")).code, "no_sender");
+  assert.equal(authorize(allow, ["", undefined], ev("codex")).code, "no_sender");
+  assert.equal(authorize(null, ["owner"], ev("codex")).code, "allowlist_invalid");
+  assert.equal(authorize({ version: 1 }, ["owner"], ev("codex")).code, "allowlist_invalid");
+  for (const bad of [null, "codex", [], {}, { actor: "" }, { actor: 5 }]) assert.equal(authorize(allow, ["owner"], bad).code, "bad_event");
+});
+
+test("a verified sender is copied into the event entry and the schema accepts it", () => {
+  const dir = tmp();
+  assert.equal(goal(dir, 2, { sender: "yanskfz" }).code, 0);
+  const entry = JSON.parse(fs.readFileSync(path.join(dir, "workspace/events.jsonl"), "utf8").trim());
+  assert.equal(entry.sender, "yanskfz");
+  assertValid(dir);
+  const plain = tmp();
+  goal(plain);
+  assert.ok(!("sender" in JSON.parse(fs.readFileSync(path.join(plain, "workspace/events.jsonl"), "utf8").trim())), "no sender key when none was given");
+});
