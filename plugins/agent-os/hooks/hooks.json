@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/ensure-rtk.sh\"" },
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/show-brief.sh\"" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/rtk-rewrite.sh\"" }
+        ]
+      }
+    ]
+  }
+}

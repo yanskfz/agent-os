@@ -1,0 +1,10 @@
+{
+  "extraKnownMarketplaces": {
+    "yansz-agent-os": {
+      "source": { "source": "github", "repo": "yanskfz/agent-os" }
+    }
+  },
+  "enabledPlugins": {
+    "agent-os@yansz-agent-os": true
+  }
+}

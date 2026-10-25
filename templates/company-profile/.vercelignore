@@ -1,0 +1,7 @@
+# Keep internal files off the live site.
+.claude
+docs
+mockups
+scripts
+screenshots
+*.md

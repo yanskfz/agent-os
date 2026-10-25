@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "yansz-agent-os",
+  "owner": { "name": "Yansz" },
+  "metadata": {
+    "description": "Yansz's reusable skills, agents and hooks for Claude Code projects."
+  },
+  "plugins": [
+    {
+      "name": "agent-os",
+      "source": "./plugins/agent-os",
+      "description": "Planning, building, reviewing, testing and deployment checks, plus token saving (RTK) and an automatic project status brief."
+    }
+  ]
+}
