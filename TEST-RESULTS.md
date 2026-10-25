@@ -147,3 +147,16 @@ Deterministic and free: `workspace/trigger.sh` runs against a scratch bare git r
 | Mutation check | 7 deliberate breaks (prefix guard removed, rejection exits 0, force push, validation removed, cron added, `pull-requests: write` added, event interpolated into `run:`) each failed at least one test |
 | **Not run on GitHub** | GitHub does not register a `workflow_dispatch` or `repository_dispatch` workflow until it is on the default branch (`main`): dispatching `workspace-event.yml` from the PR branch returned 404. So the Action wiring (expression evaluation, token push, run summary and annotations) is `not checked` until the first dispatch after merge |
 | Not covered | the `actor` in a payload is not authenticated; dropping a third queued event is GitHub's concurrency behaviour and was not observed |
+
+## Event trigger authority (`node tests/trigger.test.js`, `node tests/workspace.test.js`)
+
+Deterministic and free, same setup as the event trigger section above.
+
+| Level | Result |
+|-------|--------|
+| Created | `workspace/authorize.js`, `workspace/allowed-senders.json`, sender check in `workspace/trigger.sh`, default-branch guard and `SENDER`/`TRIGGERING_ACTOR` in the workflow, optional `sender` in the event schema |
+| Passed locally | 18 of 18 trigger tests; 18 of 18 workspace tests |
+| Covered | a sender not on the allowlist cannot act as `codex`, `project-owner` or `orchestrator` (exit 6, nothing written); no sender, missing or malformed allowlist, and a `triggering_actor` that is not allowed all fail closed; an allowlisted sender can only act as the actors listed for it; logins match case-insensitively; the recorded `sender` is the verified login even if the payload names another; idle needs no authority; non-object events exit 2; the sender comes from `github.actor` and never from inputs or the payload; the job is limited to the default branch; the initial allowlist is `yanskfz` only |
+| Mutation check | 8 deliberate breaks (authorize call removed, sender taken from inputs, payload sender wins, case-sensitive logins, triggering actor ignored, actor claim not checked, fail open on a bad allowlist, default-branch guard removed) each failed at least one test |
+| **Not run on GitHub** | the Action wiring (expression evaluation, `github.triggering_actor` value, token push, annotations) is `not checked` until the first dispatch after the workflow is on `main` |
+| Not covered | a collaborator who can push a branch can edit the workflow and allowlist on their own branch and run that copy; closing that needs repository settings (restricting who can push, or a protected environment), which Codex left out of the MVP |
