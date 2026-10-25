@@ -84,7 +84,7 @@ weekly reset budget, and Codex usage discipline.
 - Never run multiple owners on the same concern.
 - At most one focused retry per failed gate and at most three worker runs per goal.
 - Before a session/context window is constrained, persist a checkpoint and hand off.
-- Dollar caps and model mapping wait for the benchmark branch; structural caps apply now.
+- Dollar caps and model mapping use the dependency-free policy in `workspace/model-policy.json`; the policy must approve a run before a future worker adapter invokes a provider. Structural caps still apply now.
 - A resource budget failure transitions to STOPPED or BLOCKED, never to an unbounded retry.
 
 ## Cost, retry, and safety
