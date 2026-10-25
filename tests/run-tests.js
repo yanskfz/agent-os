@@ -19,7 +19,9 @@ const LOGS = path.join(OUT, "logs");
 const MODEL = process.env.MODEL || "claude-haiku-5-5";
 const SKILLS = ["agent-routing", "project-planning", "web-development", "code-review", "testing-and-validation", "deployment-verification", "project-brief"];
 const AGENTS = ["project-planner", "developer", "code-reviewer", "qa-agent", "deployment-assistant"];
-const BASH_ALLOWED = ["npm test", "npm run *", "node *", "git *", "ls *", "cat *"];
+// `echo *` lets QA print an exit code after `npm test; echo $?`; without it a compound command was blocked and
+// the QA agent (correctly) reported PARTIAL because it could not observe the exit status.
+const BASH_ALLOWED = ["npm test", "npm run *", "node *", "git *", "ls *", "cat *", "echo *"];
 // The RTK hook rewrites e.g. `git diff` to `rtk git diff`, and permissions are checked on the rewritten
 // command, so every allowed Bash pattern needs an `rtk`-prefixed twin (plus `rtk read`, RTK's cat).
 const ALLOWED = ["Read", "Edit", "Write", "Grep", "Glob", "Agent", "Task",
@@ -43,11 +45,15 @@ function workspace(name) {
 }
 
 // Runs one headless Claude Code session and returns its parsed event stream.
-function claude(name, cwd, prompt, { pluginDir = PLUGIN, env = {}, maxTurns = 30 } = {}) {
-  const args = ["-p", prompt + "\n\nRun any subagent in the foreground (run_in_background: false) and wait for it to finish.", "--model", MODEL, "--max-turns", String(maxTurns),
+// With `agent`, the whole session runs as that agent (`--agent`), so the prompt reaches it verbatim instead of
+// being rewritten by a main session before delegation.
+function claude(name, cwd, prompt, { pluginDir = PLUGIN, env = {}, maxTurns = 30, agent = null } = {}) {
+  const suffix = agent ? "" : "\n\nRun any subagent in the foreground (run_in_background: false) and wait for it to finish.";
+  const args = ["-p", prompt + suffix, "--model", MODEL, "--max-turns", String(maxTurns),
     "--output-format", "stream-json", "--verbose", "--permission-mode", "acceptEdits",
     "--allowedTools", ...ALLOWED];
   if (pluginDir) args.push("--plugin-dir", pluginDir);
+  if (agent) args.push("--agent", agent);
   const r = sh("claude", args, { cwd, env: { ...process.env, ...env } });
   fs.writeFileSync(path.join(LOGS, `${name}.jsonl`), r.out);
   const events = r.out.split("\n").filter((l) => l.startsWith("{")).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
@@ -127,7 +133,10 @@ const tests = {
   C() {
     const dir = workspace("C");
     const run = claude("C-developer", dir, "Use the agent-os:developer subagent for this task: add a function excerpt(text, maxWords) to src/text.js that returns the first maxWords words of text joined by single spaces, and appends \"…\" only when words were cut off. Export it, add tests for it in test/text.test.js, and run npm test. Then summarize in 3 lines.");
-    const diff = sh("git", ["diff", "--stat"], { cwd: dir }).out.trim();
+    // Compare against the fixture commit, not HEAD: the developer skill says to commit, and an agent that commits
+    // would otherwise look like "no changes".
+    const base = sh("git", ["rev-list", "--max-parents=0", "HEAD"], { cwd: dir }).out.trim();
+    const diff = sh("git", ["diff", "--stat", base], { cwd: dir }).out.trim();
     const test = sh("npm", ["test", "--silent"], { cwd: dir });
     const check = sh("node", ["-e", `const {excerpt}=require('./src/text');const a=excerpt('one two three four',2),b=excerpt('one two',5);if(a!=='one two…'||b!=='one two'){console.log(JSON.stringify([a,b]));process.exit(1)}console.log('behaviour ok')`], { cwd: dir });
     const inv = invoked(run, "developer");
@@ -234,8 +243,9 @@ tests.G = function G() {
 
 tests.H = function H() {
   // Routing behaviour: a task outside the agent's role, or without checkable criteria, must come back as a
-  // compact handoff (Owner, Unresolved) and must not change any file. Judged from the subagent's returned
-  // text and `git status`, never from what the main session says.
+  // compact handoff (Owner, Unresolved) and must not change any file. The session runs AS the agent (`--agent`)
+  // so the task arrives verbatim (a first version delegated through a main session, which rewrote the vague
+  // task into detailed steps and made the test invalid). Judged from the returned text and the repo state.
   const cases = [
     { key: "qa-agent given an implementation task", agent: "qa-agent",
       task: "add a function excerpt(text, maxWords) to src/text.js that returns the first maxWords words" },
@@ -247,16 +257,17 @@ tests.H = function H() {
   let allOk = true;
   cases.forEach((c, i) => {
     const dir = workspace("H" + (i + 1));
-    const run = claude(`H${i + 1}-${c.agent}`, dir,
-      `Use the agent-os:${c.agent} subagent for this task: ${c.task}. Then reply with the subagent's answer exactly as returned.`,
-      { maxTurns: 12 });
-    const text = run.agentResults.join("\n") + "\n" + run.result;
-    const inv = invoked(run, c.agent);
-    const clean = sh("git", ["status", "--porcelain"], { cwd: dir }).out.trim() === "";
-    const handoff = /owner/i.test(run.agentResults.join("\n")) && /unresolved/i.test(run.agentResults.join("\n"));
+    const base = sh("git", ["rev-list", "--max-parents=0", "HEAD"], { cwd: dir }).out.trim();
+    const run = claude(`H${i + 1}-${c.agent}`, dir, c.task, { maxTurns: 10, agent: `agent-os:${c.agent}` });
+    const text = run.result;
+    const inv = run.code === 0 && text.trim().length > 0;
+    // Clean = no uncommitted changes and no commit that changed files since the fixture.
+    const clean = sh("git", ["status", "--porcelain"], { cwd: dir }).out.trim() === "" &&
+      sh("git", ["diff", "--stat", base], { cwd: dir }).out.trim() === "";
+    const handoff = /owner/i.test(text) && /unresolved/i.test(text);
     const ok = inv && clean && handoff;
     if (!ok) allOk = false;
-    levels[`${c.key}: agent invoked`] = inv ? "yes" : "NO";
+    levels[`${c.key}: session ran as the agent`] = inv ? "yes (--agent)" : "NO";
     levels[`${c.key}: no file changed`] = clean ? "yes" : "NO";
     levels[`${c.key}: handoff returned (Owner, Unresolved)`] = handoff ? "yes" : "NO";
     evidence[`case${i + 1}`] = text.slice(0, 800);
