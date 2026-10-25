@@ -18,7 +18,7 @@ description: Implement web features or fixes inside an existing project, followi
 4. Keep content and configuration where the project expects it (e.g. text in a content file, colors in theme tokens).
 5. Accessibility basics on every UI change: real `<button>`/`<a>`, visible focus, alt text, contrast at least 4.5:1,
    respect `prefers-reduced-motion`.
-6. Run the project's checks (see `testing-and-validation`). For visual changes, take screenshots at 1440 px and 390 px.
+6. Run the project's checks (see `testing-and-validation`). For visual changes, run the screenshot check (nine viewports, 320 to 1920 px) and require OK on each.
 7. Commit on a feature branch with a short English message. Open a PR when asked.
 
 ## Output

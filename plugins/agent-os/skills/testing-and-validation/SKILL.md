@@ -14,7 +14,9 @@ description: Find the right checks for a project, run them, and report real resu
 3. For static or visual web projects with no test suite, run the bundled screenshot check:
    `node "${CLAUDE_PLUGIN_ROOT}/skills/testing-and-validation/scripts/screenshot.js" [page] [outDir]`
    (run it from the project root; needs Playwright, which Claude Code cloud sessions have).
-   It prints one `OK`/`FAIL` line per width (1440 and 390) with page overflow, broken images and console errors.
+   It prints one `OK`/`FAIL` line per viewport (the nine in `docs/COMPANY-PROFILE-DESIGN-GUARD.md`, 320 to 1920 px) with
+   page overflow, broken images, interactive targets under 24x24 px, clipped header/footer elements and console errors.
+   Failed requests to third-party hosts (fonts, CDNs) are listed as a note and not counted.
 4. Check each acceptance criterion and mark it `pass`, `fail` or `not checked` (with the reason).
 5. For a failure, give the exact command and output so it can be reproduced.
 

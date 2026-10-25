@@ -37,7 +37,8 @@ A new client changes only CLIENT files. Engine changes must work for every clien
 5. Production: owner merges after the approval phrase.
 
 ## Quality
-1440 px and 390 px look right; no page scroll on desktop; real buttons and links; visible focus;
+The nine viewports in agent-os `docs/COMPANY-PROFILE-DESIGN-GUARD.md` (320 to 1920 px) look right and the
+screenshot check prints OK for each; no page scroll on desktop; real buttons and links; visible focus;
 contrast at least 4.5:1; alt text on every photo; no console errors; reduced motion respected; placeholders in [brackets].
 
 ## Talking to the owner

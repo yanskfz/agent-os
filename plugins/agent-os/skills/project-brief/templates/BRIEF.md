@@ -5,6 +5,9 @@
 - Updated: [YYYY-MM-DD]
 - Branch / PR: [ ]
 - Preview: [ ]
+- Primary owner: [ ]
+- Work mode: [requirements | planning | design | implementation | review | qa | deployment]
+- Quality gate: [ ]
 
 ## Open questions
 - [ ] [Question] (owner: [who answers])

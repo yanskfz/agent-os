@@ -4,9 +4,11 @@ Yansz's reusable AI agent library for Claude Code: skills, subagents, hooks and 
 packaged as one Claude Code plugin and managed from a phone.
 
 - **Plugin** `agent-os` (in `plugins/agent-os/`), published through the marketplace `yansz-agent-os` in this repo.
-  - Skills: `project-planning`, `web-development`, `code-review`, `testing-and-validation`, `deployment-verification`, `project-brief`.
+  - Skills: `agent-routing`, `project-planning`, `web-development`, `code-review`, `testing-and-validation`, `deployment-verification`, `project-brief`.
   - Agents: `project-planner`, `developer`, `code-reviewer`, `qa-agent`, `deployment-assistant`.
   - Hooks: RTK token saving for Bash output; prints the project's `BRIEF.md` status at session start.
+- **Routing**: `docs/AGENT-ROUTING-REQUIREMENT.md` defines fit checks, ownership, handoffs, escalation, and cost discipline.
+- **Design guard**: `docs/COMPANY-PROFILE-DESIGN-GUARD.md` defines responsive and accessibility requirements for company profile sites.
 - **Templates**: `templates/company-profile/` (one-screen carousel site, plain HTML/CSS/JS, Vercel-ready).
 - **Proof**: `TEST-RESULTS.md` (what was actually run and what passed).
 

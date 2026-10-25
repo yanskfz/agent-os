@@ -9,6 +9,19 @@ This repo is the shared library (Claude Code plugin + templates). It is not a cl
 3. Never touch client project repos from here. Test only in `fixtures/` copies (the test harness does this).
 4. Never fake results. Report each verification level separately: created, validated, discovered, invoked, completed, passed.
 5. No secrets in the repo. No paid services. No deploy of this repo to Vercel.
+6. Requirements are decided in chat (Claude chat or Codex) or by the project owner, not here. If a requirement is
+   missing or ambiguous, write an Open question in `BRIEF.md`, hand off, and stop instead of guessing
+   (except for project-brief and project-planner work, see "Delegating to subagents").
+
+## Delegating to subagents
+When delegating to a subagent, preserve the user's task and intent.
+Do not rewrite an ambiguous request into detailed implementation steps.
+
+For developer, reviewer, QA, and deployment tasks, missing or ambiguous
+acceptance criteria require a handoff with an Open question instead of guessing.
+
+For project-brief and project-planner tasks, ambiguity is an input:
+turn it into explicit Open questions, assumptions, and checkable criteria.
 
 ## Changing the plugin
 - Files: `plugins/agent-os/{skills,agents,hooks,scripts}`. Skills are `skills/<name>/SKILL.md` with `name` + `description` frontmatter.
