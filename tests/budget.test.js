@@ -4,7 +4,7 @@ const { route, estimateCost, authorizeRun } = require("../workspace/budget");
 
 const policy = {
   enabled: true,
-  autoApproveBelowUsd: 0.25,
+  autoApproveBelowUsd: 0.1,
   caps: { perRunUsd: 2, perGoalUsd: 5, perSessionUsd: 10, perMonthUsd: 25 },
   routes: { routing: "light", implementation: "standard", security: "high" },
   tiers: {
