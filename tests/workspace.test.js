@@ -31,28 +31,7 @@ const pass = (id) => ({ id, status: "pass", evidence: EV });
 const failed = (id) => ({ id, status: "fail", evidence: ["command:npm test (exit 1)"] });
 const report = (dir, results, extra = {}) => rec(dir, { type: "report", actor: "claude-code", results, ...extra });
 
-// Minimal JSON Schema subset: type, const, enum, required, properties, items, pattern, minimum, minLength.
-function check(schema, v, at = "$") {
-  const errs = [];
-  const t = (x) => (x === null ? "null" : Array.isArray(x) ? "array" : Number.isInteger(x) ? "integer" : typeof x);
-  if (schema.const !== undefined && v !== schema.const) errs.push(`${at}: expected ${schema.const}`);
-  if (schema.enum && !schema.enum.includes(v)) errs.push(`${at}: ${JSON.stringify(v)} not in enum`);
-  if (schema.type) {
-    const ok = [].concat(schema.type).some((k) => k === t(v) || (k === "number" && typeof v === "number"));
-    if (!ok) { errs.push(`${at}: type ${t(v)}`); return errs; }
-  }
-  if (typeof v === "string") {
-    if (schema.pattern && !new RegExp(schema.pattern).test(v)) errs.push(`${at}: pattern`);
-    if (schema.minLength && v.length < schema.minLength) errs.push(`${at}: too short`);
-  }
-  if (typeof v === "number" && schema.minimum !== undefined && v < schema.minimum) errs.push(`${at}: below minimum`);
-  if (v && typeof v === "object" && !Array.isArray(v)) {
-    for (const k of schema.required || []) if (!(k in v)) errs.push(`${at}.${k}: missing`);
-    for (const [k, s] of Object.entries(schema.properties || {})) if (k in v) errs.push(...check(s, v[k], `${at}.${k}`));
-  }
-  if (Array.isArray(v) && schema.items) v.forEach((x, i) => errs.push(...check(schema.items, x, `${at}[${i}]`)));
-  return errs;
-}
+const { check } = require(path.join(ROOT, "workspace/validate.js"));
 function assertValid(dir) {
   const s = status(dir);
   assert.deepEqual(check(STATE_SCHEMA, s), [], "state.json matches state.schema.json");

@@ -79,14 +79,42 @@ and the goal check, not changing the state machine.
 
 ## Tests
 
-`node tests/workspace.test.js` (16 tests, dependency-free, no model). They drive the real CLI against scratch directories and
+`node tests/workspace.test.js` (16 tests, dependency-free, no model) and `node tests/trigger.test.js` (10 tests, local git only). They drive the real CLI against scratch directories and
 validate every written state and event against the schemas.
 
 CI: `.github/workflows/workspace-tests.yml` runs the same command on Node 22 for pull requests to, and pushes on, `feat/agent-orchestrator`,
 with `contents: read` only. Making it a required status is a repository branch-protection setting, not part of the workflow file.
 
+## Event trigger (GitHub Action)
+
+`.github/workflows/workspace-event.yml` runs `workspace/trigger.sh`, which records one event on a state branch.
+
+- **Triggers:** `workflow_dispatch` and `repository_dispatch` (type `workspace-event`) only. No schedule, push or pull_request trigger, so
+  nothing runs unless someone sends an event. An empty or `null` event exits idle: no fetch, no write, no push, no model call.
+- **Payload:** one orchestrator event as JSON. `gh workflow run workspace-event.yml -f state_branch=workspace-scratch -f event='{...}'`, or
+  `POST /repos/{owner}/{repo}/dispatches` with `{"event_type":"workspace-event","client_payload":{"event":{...},"state_branch":"..."}}`.
+  The event reaches the script through an environment variable and is never interpolated into a shell command.
+- **State branch:** `workspace-state` by default; the name must start with `workspace-`, so a code branch can never be written. The first event
+  creates an orphan branch that holds only `workspace/state.json`, `workspace/events.jsonl` and `docs/HANDOFF.md`. The hand-written
+  `docs/HANDOFF.md` on code branches is never touched.
+- **After each event:** `workspace/validate.js` checks the written state and every event against the schemas, event ids are sequential, and the
+  handoff still contains the original task verbatim. Only then is the commit pushed, with a plain (never forced) push.
+- **Evidence in the Action:** a rejected event fails the job (exit 2, `::error::`, the rejection code in the run summary, nothing written). A
+  `BLOCKED` state succeeds but adds a `::warning::` and a summary line with the reason. Every recorded run shows state, branch, next action and who sent it.
+- **Concurrency:** runs are serialized per state branch (`cancel-in-progress: false`). GitHub keeps one running and one pending run, so a third
+  event sent while two are queued is cancelled and shows as a cancelled run: resend it. The state machine also rejects a second goal while one is active.
+- **Permissions:** `permissions: {}` for the workflow and `contents: write` for the one job, to push the state branch. No pull-requests permission, no
+  merge call anywhere; `tests/trigger.test.js` fails if either appears.
+- **Limits:**
+  - Anyone with write access can send an event, and the `actor` inside the payload is not authenticated. Treat the dispatch right as the
+    authority check, or put the job behind a protected environment.
+  - `repository_dispatch` only runs from the workflow file on the default branch (`main`). `workflow_dispatch` is the way to try it before that.
+  - The first push of an orphan state branch needs the repository to allow the Actions token to push; a branch ruleset on `workspace-*` would block it.
+
+Tested without GitHub in `tests/trigger.test.js` against a scratch bare remote (10 tests, mutation-checked).
+
 ## Follow-ups, in the order Codex set
 
-1. CI job (above).
-2. Main-session delegation routing: a test that inspects the delegated prompt and the repository diff.
-3. Real event trigger: a GitHub Action on `workflow_dispatch` or `repository_dispatch` only (no cron), least privilege, no merge.
+1. CI job: done.
+2. Main-session delegation routing: done (Test I and the `SessionStart` hook).
+3. Real event trigger: this section.
