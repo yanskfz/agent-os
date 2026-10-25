@@ -1,0 +1,30 @@
+name: Workspace tests
+
+# Deterministic regression gate for workspace/orchestrator.js.
+# Needs no secrets, model, network service, GitHub API or deployment access.
+on:
+  pull_request:
+    branches: [feat/agent-orchestrator]
+  push:
+    branches: [feat/agent-orchestrator]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workspace-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workspace-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run workspace tests
+        run: node tests/workspace.test.js
+      - name: Run trigger tests
+        run: node tests/trigger.test.js

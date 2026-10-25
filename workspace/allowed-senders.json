@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "senders": {
+    "yanskfz": {
+      "actors": ["project-owner", "codex", "orchestrator", "claude-code", "product-design", "qa", "reviewer", "deployment-assistant"]
+    }
+  }
+}

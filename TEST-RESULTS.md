@@ -1,4 +1,4 @@
-# Test results: agent-os v0.2.1
+# Test results: agent-os v0.2.2
 
 Date: 2026-10-25 · Environment: Claude Code cloud container, Claude Code CLI 2.1.310 · Agent model: `claude-haiku-5-5`
 Harness: `node tests/run-tests.js` (tests A-H). Every check is made by the harness from files, exit codes or the
@@ -13,6 +13,11 @@ So the current PASS state combines three runs. Every result is a single run on o
    H was rerun once more: PASS (two consecutive H passes). This rerun cannot exercise the new rule: H runs the agent
    directly in a fixture copy, while the rule governs how a main session delegates (see the verification table).
 
+**v0.2.2 (delegation routing):** adds Test I and a `SessionStart` hook that gives the main session a delegation rule.
+Test I failed before the hook (the main session rewrote the vague task into a 1,100-character brief with numbered steps and
+the developer edited `index.html`; it rewrote the QA task into a "verify" request), and passed in two consecutive runs after it.
+`claude plugin validate .` and `claude plugin validate plugins/agent-os` passed at v0.2.2; A, H and I were rerun, B-G were not.
+
 ## Verification levels
 
 | Level | Status | Evidence |
@@ -24,7 +29,7 @@ So the current PASS state combines three runs. Every result is a single run on o
 | Tasks completed | done | plan has all sections (B); real file change (C); planted defect found (D); real test verdict (E) |
 | Tests passed | done | fixture `npm test` re-run by the harness after C and after the D fix |
 | Routing preamble changes behaviour | **partly tested** | Test H, 2 cases, one run each: `qa-agent` given an implementation task and `developer` given a vague task both returned a handoff (Owner, Unresolved) and changed no file. Run as the agent directly (`--agent`); delegation through a main session is not covered, and an earlier version of H showed a main session can rewrite a vague task into detailed steps before delegating |
-| Delegation rule in `CLAUDE.md` ("preserve the user's task; ambiguity needs a handoff, except for brief and planner") | **created, not tested** | No test runs a main session that delegates a vague task and then inspects the prompt the subagent received. Planned for the orchestrator branch. The rule only applies in this repo until it is shipped through a skill or template |
+| Main-session delegation rule | **tested, 2 runs** | Test I runs a main session (no `--agent`) and judges the Agent tool call's prompt and the repo diff. Shipped to every project by the plugin's `SessionStart` hook (`scripts/delegation-rule.sh`), because the `CLAUDE.md` rule only applies inside this repository. Before the hook: FAIL (vague task expanded into steps and acted on). After: PASS twice. The invented-criteria check is a heuristic (list steps, criteria headings, unmentioned file names, long added text), and the cases are 4 tasks on one model |
 | `agent-routing` skill loaded by agents | **not observed** | 0 Skill-tool calls in the B-E logs; the preamble no longer references the skill (it is a 3-line inline check) |
 | Reuse in another project | done | second empty project, plugin installed from a local checkout, 7/7 skills, 5/5 agents, no app code copied (F, v0.2.1) |
 | Cloud install path | done | the exact `docs/cloud-setup-script.sh`, from GitHub branch `feat/routing-cost-design-guards`, loads agent-os v0.2.1 in a new session (G) |
@@ -43,6 +48,7 @@ So the current PASS state combines three runs. Every result is a single run on o
 | F. Reusability | PASS | new empty project + clean Claude config: `marketplace add` + `plugin install --scope project`; 7/7 skills, 5/5 agents; project files: `.claude/settings.json`, `README.md` only |
 | G. Cloud setup script | PASS | `docs/cloud-setup-script.sh` from GitHub source `yanskfz/agent-os#feat/routing-cost-design-guards`; plugin v0.2.1 loaded, 7/7 skills, 5/5 agents (main does not have v0.2.x until the PR is merged) |
 | H. Out-of-scope handoff | PASS | session run as the agent (`--agent`); `qa-agent` + implementation task and `developer` + vague task: each returned Owner and Unresolved, and the repo had no change vs the fixture commit |
+| I. Main-session delegation | PASS (2 runs) | main session delegates; judged from the Agent call's prompt and the repo diff. Vague and out-of-scope tasks reach the worker word for word with no added steps, the worker returns Owner and Unresolved, no file changes, and the vague case goes back to the user to decide. The explicit task keeps every user criterion, the worker changes the code and the harness's `npm test` passes. With two agents asked to do the same work, at most one does it |
 
 ## Cost per run (v0.2.1, `claude-haiku-5-5`)
 
@@ -62,6 +68,8 @@ One run each.
 | H2. Developer handoff | 0.0036 |
 | Total | 0.0479 |
 
+Test I (v0.2.2, latest run): I1 0.0063, I2 0.0070, I3 0.0076, I4 0.0114, total 0.0323. Not added to the total above, which is the v0.2.1 run.
+
 H was rerun once after the `CLAUDE.md` patch: H1 0.0011, H2 0.0019, about half of the first H run (0.0023, 0.0036) for the
 same prompts. The table above keeps the first-run values.
 
@@ -75,7 +83,7 @@ per cell. Costs for other models are not measured. Costs of the first v0.2.1 run
    "make the site better" returned a handoff with Scope, Owner and Unresolved (about $0.002) and changed nothing.
 2. **It did not hold when a main session delegated.** In the first H attempt the main session expanded the vague task
    into explicit steps, the developer then acted and edited `index.html`. This is a gap in routing that the agent
-   preamble cannot close: the main session decides what the subagent is told. Not fixed; recorded as a limitation.
+   preamble cannot close: the main session decides what the subagent is told. **Closed in v0.2.2** by the delegation rule in the `SessionStart` hook; see Test I.
 3. **The template failed the design guard at 320 px** (page overflow 30 px, clipped controls and chip) and the
    navigation dots were 20x32 px at 320-414 px, below the guard's 24x24 minimum. The old screenshot check (390 and
    1440 px only) could not see either. Fixed in the template CSS; verified OK at all nine viewports.
@@ -112,6 +120,43 @@ per cell. Costs for other models are not measured. Costs of the first v0.2.1 run
   setup script is in the environment; check by typing `/agent-os:` in a new session.
 - `deployment-assistant` against a real Vercel deployment.
 - Results with other models; variance between runs (every result is a single run, and Test A's cost varied 2.8x).
-- Routing when a main session delegates to an agent (see finding 2).
+- Delegation routing beyond Test I: one model, 4 tasks, 2 consecutive passes; the invented-criteria check is a heuristic; the `Skill`-based path and the orchestrator calling it are not covered.
 - The design guard beyond what `screenshot.js` checks: 200% zoom, keyboard focus order, contrast, landscape layouts.
 - The design guard check is not in `run-tests.js`.
+
+## Workspace orchestrator (`node tests/workspace.test.js`)
+
+Deterministic: no model, no network, no cost. Separate from tests A-H. Run on 2026-10-25 with Node 22.
+
+| Level | Result |
+|-------|--------|
+| Created | `workspace/{orchestrator.js,handoff.md,state.schema.json,events.schema.json}`, `docs/WORKSPACE-ARCHITECTURE.md`, `tests/workspace.test.js` |
+| Passed | 16 of 16 |
+| Mutation check | raising the run cap, raising the retry cap, accepting unevidenced `pass` and allowing `merge` each made at least one test fail; the original code passes |
+| Not run | `claude plugin validate` and tests A-H (the plugin and `tests/run-tests.js` were not changed); no GitHub Action or scheduled trigger exists yet, so the orchestrator has only been driven by the tests |
+
+## Event trigger (`node tests/trigger.test.js`)
+
+Deterministic and free: `workspace/trigger.sh` runs against a scratch bare git remote, with no GitHub, model or network access. Node 22, git 2.43.
+
+| Level | Result |
+|-------|--------|
+| Created | `.github/workflows/workspace-event.yml`, `workspace/trigger.sh`, `workspace/validate.js`, `tests/trigger.test.js`, docs section |
+| Passed locally | 10 of 10 trigger tests; 16 of 16 workspace tests (they now share `validate.js`) |
+| Covered | idle writes and pushes nothing; first event creates an orphan `workspace-*` branch with only state; later events append; a rejected event exits 2 and changes nothing; `BLOCKED` raises a warning; only `workspace-*` branches can be written; invalid written state is never pushed; the push is never forced and keeps another writer's commit; the workflow has only the two dispatch triggers, `permissions: {}` plus job `contents: write`, no pull-requests permission, no merge, and no expression inside a `run:` |
+| Mutation check | 7 deliberate breaks (prefix guard removed, rejection exits 0, force push, validation removed, cron added, `pull-requests: write` added, event interpolated into `run:`) each failed at least one test |
+| **Not run on GitHub** | GitHub does not register a `workflow_dispatch` or `repository_dispatch` workflow until it is on the default branch (`main`): dispatching `workspace-event.yml` from the PR branch returned 404. So the Action wiring (expression evaluation, token push, run summary and annotations) is `not checked` until the first dispatch after merge |
+| Not covered | the `actor` in a payload is not authenticated; dropping a third queued event is GitHub's concurrency behaviour and was not observed |
+
+## Event trigger authority (`node tests/trigger.test.js`, `node tests/workspace.test.js`)
+
+Deterministic and free, same setup as the event trigger section above.
+
+| Level | Result |
+|-------|--------|
+| Created | `workspace/authorize.js`, `workspace/allowed-senders.json`, sender check in `workspace/trigger.sh`, default-branch guard and `SENDER`/`TRIGGERING_ACTOR` in the workflow, optional `sender` in the event schema |
+| Passed locally | 18 of 18 trigger tests; 18 of 18 workspace tests |
+| Covered | a sender not on the allowlist cannot act as `codex`, `project-owner` or `orchestrator` (exit 6, nothing written); no sender, missing or malformed allowlist, and a `triggering_actor` that is not allowed all fail closed; an allowlisted sender can only act as the actors listed for it; logins match case-insensitively; the recorded `sender` is the verified login even if the payload names another; idle needs no authority; non-object events exit 2; the sender comes from `github.actor` and never from inputs or the payload; the job is limited to the default branch; the initial allowlist is `yanskfz` only |
+| Mutation check | 8 deliberate breaks (authorize call removed, sender taken from inputs, payload sender wins, case-sensitive logins, triggering actor ignored, actor claim not checked, fail open on a bad allowlist, default-branch guard removed) each failed at least one test |
+| **Not run on GitHub** | the Action wiring (expression evaluation, `github.triggering_actor` value, token push, annotations) is `not checked` until the first dispatch after the workflow is on `main` |
+| Not covered | a collaborator who can push a branch can edit the workflow and allowlist on their own branch and run that copy; closing that needs repository settings (restricting who can push, or a protected environment), which Codex left out of the MVP |

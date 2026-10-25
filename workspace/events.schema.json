@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workspace event (one line of events.jsonl)",
+  "type": "object",
+  "required": ["id", "type", "actor", "task", "ts", "evidence", "from", "to", "transitions", "note"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^e-[0-9]{4,}$" },
+    "type": { "enum": ["goal", "dispatch", "report", "block", "unblock", "checkpoint", "pr_opened", "stop"] },
+    "actor": { "type": "string", "minLength": 1 },
+    "task": { "type": "string", "minLength": 1 },
+    "ts": { "type": "string" },
+    "evidence": { "type": "array", "items": { "type": "string", "pattern": "^(commit|pr|ci|command|file|screenshot):\\S" } },
+    "from": { "enum": ["IDLE", "INTAKE", "TRIAGE", "HANDOFF", "WORKING", "EVIDENCE", "GATE", "DONE", "RETRY", "REROUTE", "BLOCKED", "STOPPED"] },
+    "to": { "enum": ["IDLE", "INTAKE", "TRIAGE", "HANDOFF", "WORKING", "EVIDENCE", "GATE", "DONE", "RETRY", "REROUTE", "BLOCKED", "STOPPED"] },
+    "transitions": { "type": "array", "items": { "type": "string", "pattern": "^[A-Z]+>[A-Z]+$" } },
+    "note": { "type": ["string", "null"] },
+    "sender": { "type": "string", "minLength": 1 }
+  }
+}
