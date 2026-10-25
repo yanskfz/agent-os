@@ -115,3 +115,14 @@ per cell. Costs for other models are not measured. Costs of the first v0.2.1 run
 - Routing when a main session delegates to an agent (see finding 2).
 - The design guard beyond what `screenshot.js` checks: 200% zoom, keyboard focus order, contrast, landscape layouts.
 - The design guard check is not in `run-tests.js`.
+
+## Workspace orchestrator (`node tests/workspace.test.js`)
+
+Deterministic: no model, no network, no cost. Separate from tests A-H. Run on 2026-10-25 with Node 22.
+
+| Level | Result |
+|-------|--------|
+| Created | `workspace/{orchestrator.js,handoff.md,state.schema.json,events.schema.json}`, `docs/WORKSPACE-ARCHITECTURE.md`, `tests/workspace.test.js` |
+| Passed | 16 of 16 |
+| Mutation check | raising the run cap, raising the retry cap, accepting unevidenced `pass` and allowing `merge` each made at least one test fail; the original code passes |
+| Not run | `claude plugin validate` and tests A-H (the plugin and `tests/run-tests.js` were not changed); no GitHub Action or scheduled trigger exists yet, so the orchestrator has only been driven by the tests |

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workspace state",
+  "type": "object",
+  "required": ["version", "state", "goal", "surface", "task", "owner", "criteria", "runs", "limits", "retries", "changes", "blocked", "checkpoint", "pr", "updated"],
+  "properties": {
+    "version": { "const": 1 },
+    "state": { "enum": ["IDLE", "INTAKE", "TRIAGE", "HANDOFF", "WORKING", "EVIDENCE", "GATE", "DONE", "RETRY", "REROUTE", "BLOCKED", "STOPPED"] },
+    "goal": { "type": ["string", "null"] },
+    "surface": { "enum": ["terminal"] },
+    "task": { "type": "string" },
+    "owner": { "enum": ["codex", "claude-code", "product-design", "qa", "reviewer", "deployment-assistant", null] },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "status", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "text": { "type": "string" },
+          "status": { "enum": ["pass", "fail", "not checked"] },
+          "evidence": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "runs": { "type": "integer", "minimum": 0 },
+    "limits": {
+      "type": "object",
+      "required": ["maxRuns", "maxRetriesPerGate"],
+      "properties": { "maxRuns": { "type": "integer", "minimum": 1 }, "maxRetriesPerGate": { "type": "integer", "minimum": 0 } }
+    },
+    "retries": { "type": "object" },
+    "changes": { "type": "array", "items": { "type": "string" } },
+    "blocked": {
+      "type": ["object", "null"],
+      "required": ["kind", "reason"],
+      "properties": { "kind": { "enum": ["budget", "retry", "decision", "access", "security", "external"] }, "reason": { "type": "string" } }
+    },
+    "checkpoint": {
+      "type": ["object", "null"],
+      "required": ["note", "next"],
+      "properties": { "note": { "type": "string" }, "next": { "type": "string" } }
+    },
+    "pr": { "type": ["string", "null"] },
+    "updated": { "type": ["string", "null"] }
+  }
+}
