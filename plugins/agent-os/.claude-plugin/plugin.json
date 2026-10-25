@@ -1,0 +1,10 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "agent-os",
+  "version": "0.1.0",
+  "description": "Reusable skills and agents: project planning, web development, code review, testing and validation, deployment verification, and a project brief that every session reads first. Includes RTK token-saving hooks.",
+  "author": { "name": "Yansz" },
+  "repository": "https://github.com/yanskfz/agent-os",
+  "license": "MIT",
+  "keywords": ["planning", "web", "review", "testing", "vercel", "mobile"]
+}
