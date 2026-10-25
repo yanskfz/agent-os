@@ -1,0 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+
+/* CLIENT FILE: brand font (import above), colors and corner radius.
+   Change these values per client. css/style.css only reads them. */
+:root {
+  --primary: #1A56A0;
+  --on-primary: #FFFFFF;
+  --primary-container: #D6E8FA;
+  --on-primary-container: #0A2A52;
+  --bg: #EAF3FC;
+  --text: #0F1B2A;
+  --muted: #435568;
+  --dark: #0E3A70;
+  --focus: #2E9BD6;
+
+  --font: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius-photo: 28px;
+}
