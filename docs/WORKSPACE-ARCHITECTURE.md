@@ -61,7 +61,7 @@ Events are written before state. A crash between the two leaves an extra event l
 - A retry needs a changed input, owner or strategy that was not tried before.
 - At most 3 worker runs per goal. The fourth `dispatch` ends in `BLOCKED` (kind `budget`) and never starts. Neither cap can be lifted
   by `unblock`; stop and set a new goal.
-- Dollar caps and model mapping are out of scope (separate benchmark branch).
+- Dollar caps and model mapping are defined in `workspace/model-policy.json` and checked by `workspace/budget.js`; the policy is disabled until a provider adapter and reviewed rate card are approved.
 - The evidence check is a format check only. It does not prove that the commit, PR, CI run, file or screenshot exists, and it must
   not be described as proof. Resolving references (marking them `verified` or `unverified`) is a later, optional verifier or CI gate
   so that `record` stays dependency-free and works without credentials.
