@@ -8,7 +8,7 @@
 - [ ] None (fixture)
 
 ## Next step
-Run the agent-os tests in tests/run-tests.js.
+Run `npm test` and report the result.
 
 ## Decisions
 - 2026-10-25 Fixture uses plain Node.js with the built-in test runner, no dependencies.

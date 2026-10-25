@@ -74,3 +74,17 @@ fixtures/sample-site/              isolated test project (never a real site)
 tests/run-tests.js                 tests A-G; results in tests/results/ and TEST-RESULTS.md
 docs/                              this guide and the cloud setup script
 ```
+
+## Known limitations
+- **Permission rules and RTK.** The RTK hook rewrites Bash commands (`git diff` → `rtk git diff`) and Claude Code
+  checks permissions on the rewritten command. If a project allows specific commands in `.claude/settings.json`
+  (e.g. `Bash(git *)`), add an `rtk` twin for each (`Bash(rtk git *)`). Do not allow `Bash(rtk *)`: that would allow any command.
+  Found by Test D/E (first run): the subagents were denied until the twins were added.
+- **Settings alone do not install the plugin** in a fresh cloud container; use the setup script (step 0).
+  Not tested: whether the interactive claude.ai/code UI offers to install it from project settings.
+- **Cowork** (the desktop/mobile Cowork app) is a separate product; this plugin setup covers Claude Code only.
+- **Agent tests use a small model** (`claude-haiku-5-5`) to keep costs down. Results with larger models may differ;
+  rerun with `MODEL=<model id> node tests/run-tests.js`.
+- **Agent output is not deterministic.** A test that passed can fail on a rerun; the harness records each run.
+- **Projects that already have their own RTK hooks** (e.g. `msj-profiles/.claude/`) will run RTK twice once the plugin
+  is on. Remove the project copy when switching that project to the plugin.
