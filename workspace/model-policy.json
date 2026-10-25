@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "enabled": false,
+  "currency": "USD",
+  "note": "Logical model aliases and example rates only. Replace rateCard before enabling a live provider adapter.",
+  "autoApproveBelowUsd": 0.25,
+  "caps": {
+    "perRunUsd": 2,
+    "perGoalUsd": 5,
+    "perSessionUsd": 10,
+    "perMonthUsd": 25
+  },
+  "routes": {
+    "routing": "light",
+    "extraction": "light",
+    "formatting": "light",
+    "routine_documentation": "light",
+    "planning": "standard",
+    "implementation": "standard",
+    "review": "standard",
+    "qa": "standard",
+    "design": "standard",
+    "deployment_verification": "light",
+    "ambiguity": "high",
+    "architecture": "high",
+    "debugging": "high",
+    "security": "high",
+    "conflicting_evidence": "high"
+  },
+  "tiers": {
+    "light": {
+      "model": "configured-light",
+      "maxInputTokens": 4000,
+      "maxOutputTokens": 2000,
+      "approval": "auto_if_under_threshold"
+    },
+    "standard": {
+      "model": "configured-standard",
+      "maxInputTokens": 12000,
+      "maxOutputTokens": 6000,
+      "approval": "manual_if_over_threshold"
+    },
+    "high": {
+      "model": "configured-high",
+      "maxInputTokens": 20000,
+      "maxOutputTokens": 10000,
+      "approval": "always_manual"
+    }
+  },
+  "rateCard": {
+    "configured-light": {
+      "inputUsdPerMillion": 0.25,
+      "outputUsdPerMillion": 1.25
+    },
+    "configured-standard": {
+      "inputUsdPerMillion": 3,
+      "outputUsdPerMillion": 15
+    },
+    "configured-high": {
+      "inputUsdPerMillion": 15,
+      "outputUsdPerMillion": 75
+    }
+  }
+}
