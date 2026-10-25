@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "state": "HANDOFF",
+  "goal": "g-0001",
+  "surface": "terminal",
+  "task": "Define requirements and an approval-ready design direction for yanskfz/msj-profiles, preserving the repository brief and hard constraints. Do not implement production code yet.",
+  "owner": "codex",
+  "criteria": [
+    {
+      "id": "c1",
+      "text": "BRIEF.md requirements and open questions are explicit without invented business facts",
+      "status": "not checked",
+      "evidence": []
+    },
+    {
+      "id": "c2",
+      "text": "Acceptance criteria cover content, design, accessibility, and approval gates",
+      "status": "not checked",
+      "evidence": []
+    },
+    {
+      "id": "c3",
+      "text": "A mockup direction is defined for the existing seven-slide carousel",
+      "status": "not checked",
+      "evidence": []
+    },
+    {
+      "id": "c4",
+      "text": "Missing client data remains placeholder-safe",
+      "status": "not checked",
+      "evidence": []
+    },
+    {
+      "id": "c5",
+      "text": "The next handoff to Product Design is compact and checkable",
+      "status": "not checked",
+      "evidence": []
+    }
+  ],
+  "runs": 0,
+  "limits": {
+    "maxRuns": 3,
+    "maxRetriesPerGate": 1
+  },
+  "retries": {},
+  "changes": [],
+  "blocked": null,
+  "checkpoint": null,
+  "pr": null,
+  "updated": "2026-10-25T06:43:40.695Z"
+}
