@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "state": "WORKING",
+  "state": "DONE",
   "goal": "g-0001",
   "surface": "terminal",
   "task": "Verify the approved new MSJ Profiles appearance in the Vercel preview and review PR #3 before merge. Do not merge or deploy.",
@@ -9,32 +9,46 @@
     {
       "id": "c1",
       "text": "The Vercel preview loads the approved appearance",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "screenshot:https://msj-profiles-e2bkxrirt-zeeykans.vercel.app/",
+        "ci:https://vercel.com/zeeykans/msj-profiles/2nZ3bjBYPzGpfywtqTY2nVHCbwnR"
+      ]
     },
     {
       "id": "c2",
       "text": "The seven-slide carousel navigation works with arrows, dots, keyboard, and placeholder-safe video/contact states",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "command:browser-ax:carousel-dots-arrows-keyboard",
+        "screenshot:https://msj-profiles-e2bkxrirt-zeeykans.vercel.app/"
+      ]
     },
     {
       "id": "c3",
       "text": "The layout is readable and usable at desktop and phone widths",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "screenshot:https://msj-profiles-e2bkxrirt-zeeykans.vercel.app/",
+        "command:browser-viewport:390x844"
+      ]
     },
     {
       "id": "c4",
       "text": "No real client data is exposed and the approval notice remains visible",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "screenshot:https://msj-profiles-e2bkxrirt-zeeykans.vercel.app/",
+        "file:client/content.js"
+      ]
     },
     {
       "id": "c5",
       "text": "The QA result and any unresolved findings are compactly handed off for merge review",
-      "status": "not checked",
-      "evidence": []
+      "status": "pass",
+      "evidence": [
+        "pr:https://github.com/yanskfz/msj-profiles/pull/3"
+      ]
     }
   ],
   "runs": 1,
@@ -47,5 +61,5 @@
   "blocked": null,
   "checkpoint": null,
   "pr": null,
-  "updated": "2026-10-25T07:03:56.672Z"
+  "updated": "2026-10-25T07:04:29.905Z"
 }

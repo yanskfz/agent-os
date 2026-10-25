@@ -1,6 +1,6 @@
 # Active Handoff
 
-Status: WORKING
+Status: DONE
 Goal: g-0001
 Owner: qa
 Surface: terminal
@@ -12,15 +12,15 @@ Verify the approved new MSJ Profiles appearance in the Vercel preview and review
 
 ## Acceptance criteria
 
-- [not checked] c1: The Vercel preview loads the approved appearance
-- [not checked] c2: The seven-slide carousel navigation works with arrows, dots, keyboard, and placeholder-safe video/contact states
-- [not checked] c3: The layout is readable and usable at desktop and phone widths
-- [not checked] c4: No real client data is exposed and the approval notice remains visible
-- [not checked] c5: The QA result and any unresolved findings are compactly handed off for merge review
+- [pass] c1: The Vercel preview loads the approved appearance (evidence: screenshot:https://msj-profiles-e2bkxrirt-zeeykans.vercel.app/, ci:https://vercel.com/zeeykans/msj-profiles/2nZ3bjBYPzGpfywtqTY2nVHCbwnR)
+- [pass] c2: The seven-slide carousel navigation works with arrows, dots, keyboard, and placeholder-safe video/contact states (evidence: command:browser-ax:carousel-dots-arrows-keyboard, screenshot:https://msj-profiles-e2bkxrirt-zeeykans.vercel.app/)
+- [pass] c3: The layout is readable and usable at desktop and phone widths (evidence: screenshot:https://msj-profiles-e2bkxrirt-zeeykans.vercel.app/, command:browser-viewport:390x844)
+- [pass] c4: No real client data is exposed and the approval notice remains visible (evidence: screenshot:https://msj-profiles-e2bkxrirt-zeeykans.vercel.app/, file:client/content.js)
+- [pass] c5: The QA result and any unresolved findings are compactly handed off for merge review (evidence: pr:https://github.com/yanskfz/msj-profiles/pull/3)
 
 ## Next
 
-{"action":"await_report","owner":"qa"}
+{"action":"open_pr"}
 
 ## Rules
 
