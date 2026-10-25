@@ -59,5 +59,5 @@ test("caps fail closed before a model call", () => {
   assert.throws(() => authorizeRun({ kind: "implementation", inputTokens: 10000, outputTokens: 5000, approved: true, spentGoalUsd: 4.9 }, policy), { code: "goal_cap" });
   assert.throws(() => authorizeRun({ kind: "implementation", inputTokens: 10000, outputTokens: 5000, approved: true, spentSessionUsd: 9.9 }, policy), { code: "session_cap" });
   assert.throws(() => authorizeRun({ kind: "implementation", inputTokens: 10000, outputTokens: 5000, approved: true, spentMonthUsd: 24.9 }, policy), { code: "month_cap" });
-  assert.throws(() => authorizeRun({ kind: "implementation", inputTokens: 10000, outputTokens: 5000, approved: true }, policy), { code: "approval_required" });
+  assert.throws(() => authorizeRun({ kind: "implementation", inputTokens: 10000, outputTokens: 5000 }, policy), { code: "approval_required" });
 });
