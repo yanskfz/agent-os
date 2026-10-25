@@ -30,7 +30,10 @@
     "kind": "access",
     "reason": "scratch test: simulated missing access"
   },
-  "checkpoint": null,
+  "checkpoint": {
+    "note": "live repository_dispatch test",
+    "next": "wait for the project owner to lift the block"
+  },
   "pr": null,
-  "updated": "2026-10-25T06:31:26.692Z"
+  "updated": "2026-10-25T06:31:54.337Z"
 }

@@ -1,2 +1,3 @@
 {"id":"e-0001","type":"goal","actor":"project-owner","task":"g-0001","ts":"2026-10-25T06:30:30.455Z","evidence":[],"from":"IDLE","to":"HANDOFF","transitions":["IDLE>INTAKE","INTAKE>TRIAGE","TRIAGE>HANDOFF"],"note":null,"sender":"yanskfz"}
 {"id":"e-0002","type":"block","actor":"claude-code","task":"g-0001","ts":"2026-10-25T06:31:26.692Z","evidence":[],"from":"HANDOFF","to":"BLOCKED","transitions":["HANDOFF>BLOCKED"],"note":"scratch test: simulated missing access","sender":"yanskfz"}
+{"id":"e-0003","type":"checkpoint","actor":"claude-code","task":"g-0001","ts":"2026-10-25T06:31:54.337Z","evidence":[],"from":"BLOCKED","to":"BLOCKED","transitions":[],"note":"live repository_dispatch test","sender":"yanskfz"}
