@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-25T05:59:41.132Z",
+  "updated": "2026-10-25T07:53:30.732Z",
   "results": [
     {
       "id": "A",
@@ -151,10 +151,10 @@
         "developer given a vague task with no criteria: handoff returned (Owner, Unresolved)": "yes"
       },
       "evidence": {
-        "case1": "**Handoff: not executed by QA**\n\n- **Scope:** Add `excerpt(text, maxWords)` to `src/text.js` that returns the first `maxWords` words. I did not edit anything, since QA never edits project files.\n- **Owner:** A developer agent or the project owner. Implementation and its tests belong there. I can re-run QA once it's in place.\n- **Unresolved:** The request leaves these decisions open, and the owner should settle them before implementation:\n  - Empty or whitespace-only input.\n  - `maxWords` of 0, negative, non-integer, or larger than the word count.\n  - What counts as a word (for example, split on `/\\s+/`).\n  - Whether the result keeps the original spacing or is joined with single spaces.\n  - Whether an ellipsis is appended when text is truncated.\n\n**Baseline state (read-only, observed this s",
-        "case2": "**Handoff: not actioned**\n\n- **Scope:** \"make the site better\" has no defined target. It doesn't name a page, a metric (speed, accessibility, layout, copy, SEO), or a done condition, so I can't write checkable acceptance criteria without inventing them.\n- **Owner:** the project owner, who needs to pick the area. Once they do, I can take it as the Developer.\n- **Unresolved:** which part of the site to improve, and what \"better\" means (for example, \"Lighthouse accessibility score ≥ 90 on the home page\" or \"fix the mobile nav overflow\"). No files were changed and `npm test` was not run."
+        "case1": "**Agent-fit check: not a QA task, so I did not act.**\n\nAdding `excerpt` to `src/text.js` is an implementation change. My role is to test and report, and I never edit project files. I didn't read or modify the repo.\n\n**Handoff**\n\n- **Scope:** Add `excerpt(text, maxWords)` to `src/text.js`, which returns the first `maxWords` words of `text`.\n- **Owner:** The builder agent (Codex or the project owner). Nobody else was named.\n- **Unresolved:**\n  1. Word definition: split on whitespace? Should punctuation count as part of a word?\n  2. Whitespace in the output: keep the original spacing or join words with single spaces?\n  3. Edge cases: what should `maxWords` of 0, a negative number, or a non-integer return? What if `text` has fewer words than `maxWords`?\n  4. Ellipsis or other suffix: should th",
+        "case2": "**Handoff (not started)**\n\n- **Scope:** \"make the site better\" names no specific change, page, metric, or quality bar, so I can't tell when it's done.\n- **Owner:** project owner, to define the target. Codex is the owner for the missing decision if the owner wants it scoped by reviewing options.\n- **Unresolved:**\n  1. Which problem to fix: performance, accessibility, SEO, visual design, content, or bugs?\n  2. Which pages or files are in scope?\n  3. What counts as done, e.g. a Lighthouse score, a specific bug fixed, or a screenshot the owner approves?\n\nSend one concrete goal with checkable criteria and I'll make the smallest change and run `npm test`."
       },
-      "ranAt": "2026-10-25T05:59:41.132Z",
+      "ranAt": "2026-10-25T07:53:30.732Z",
       "model": "claude-haiku-5-5"
     },
     {
@@ -214,6 +214,155 @@
         }
       },
       "ranAt": "2026-10-25T05:58:54.067Z",
+      "model": "claude-haiku-5-5"
+    },
+    {
+      "id": "J",
+      "title": "Agent model field is honoured",
+      "status": "PASS",
+      "levels": {
+        "subagent model: sonnet: served by": "claude-haiku-5-5 + claude-sonnet-5-5 (as expected)",
+        "subagent model: opus: served by": "claude-haiku-5-5 + claude-opus-5-5 (as expected)",
+        "subagent without model: inherits the session model: served by": "claude-haiku-5-5 (as expected)",
+        "--agent with model: opus and no --model flag: served by": "claude-opus-5-5 (as expected)",
+        "--model flag overrides the agent's model: opus: served by": "claude-sonnet-5-5 (as expected)"
+      },
+      "evidence": {
+        "case1": {
+          "sessionModel": "claude-haiku-5-5",
+          "modelUsage": {
+            "claude-haiku-5-5": {
+              "inputTokens": 4,
+              "outputTokens": 249,
+              "cacheReadInputTokens": 77035,
+              "cacheCreationInputTokens": 22393,
+              "webSearchRequests": 0,
+              "costUSD": 0.00537385,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 29,
+              "canonicalModel": "claude-haiku-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            },
+            "claude-sonnet-5-5": {
+              "inputTokens": 2,
+              "outputTokens": 4,
+              "cacheReadInputTokens": 1361,
+              "cacheCreationInputTokens": 1568,
+              "webSearchRequests": 0,
+              "costUSD": 0.0041001,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 0,
+              "canonicalModel": "claude-sonnet-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "cost": 0.00947395,
+          "turns": 2
+        },
+        "case2": {
+          "sessionModel": "claude-haiku-5-5",
+          "modelUsage": {
+            "claude-haiku-5-5": {
+              "inputTokens": 4,
+              "outputTokens": 190,
+              "cacheReadInputTokens": 78844,
+              "cacheCreationInputTokens": 20545,
+              "webSearchRequests": 0,
+              "costUSD": 0.00499284,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 0,
+              "canonicalModel": "claude-haiku-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            },
+            "claude-opus-5-5": {
+              "inputTokens": 2,
+              "outputTokens": 4,
+              "cacheReadInputTokens": 1361,
+              "cacheCreationInputTokens": 1561,
+              "webSearchRequests": 0,
+              "costUSD": 0.008165200000000001,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 0,
+              "canonicalModel": "claude-opus-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "cost": 0.013158040000000001,
+          "turns": 2
+        },
+        "case3": {
+          "sessionModel": "claude-haiku-5-5",
+          "modelUsage": {
+            "claude-haiku-5-5": {
+              "inputTokens": 6,
+              "outputTokens": 196,
+              "cacheReadInputTokens": 80206,
+              "cacheCreationInputTokens": 22104,
+              "webSearchRequests": 0,
+              "costUSD": 0.005204535000000001,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 0,
+              "canonicalModel": "claude-haiku-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "cost": 0.005204535000000001,
+          "turns": 2
+        },
+        "case4": {
+          "sessionModel": "claude-opus-5-5",
+          "modelUsage": {
+            "claude-opus-5-5": {
+              "inputTokens": 2,
+              "outputTokens": 59,
+              "cacheReadInputTokens": 1066,
+              "cacheCreationInputTokens": 2777,
+              "webSearchRequests": 0,
+              "costUSD": 0.023617199999999998,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 55,
+              "canonicalModel": "claude-opus-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "cost": 0.023617199999999998,
+          "turns": 1
+        },
+        "case5": {
+          "sessionModel": "claude-sonnet-5-5",
+          "modelUsage": {
+            "claude-sonnet-5-5": {
+              "inputTokens": 2,
+              "outputTokens": 129,
+              "cacheReadInputTokens": 1066,
+              "cacheCreationInputTokens": 2783,
+              "webSearchRequests": 0,
+              "costUSD": 0.0125326,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 125,
+              "canonicalModel": "claude-sonnet-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "cost": 0.0125326,
+          "turns": 1
+        }
+      },
+      "ranAt": "2026-10-25T07:52:57.675Z",
       "model": "claude-haiku-5-5"
     }
   ]
