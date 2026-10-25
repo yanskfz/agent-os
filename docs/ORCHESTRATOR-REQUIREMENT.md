@@ -73,6 +73,20 @@ Every transition identifies evidence:
 Every criterion is `pass`, `fail`, or `not checked`. A claim without evidence is
 `not checked`.
 
+## Token and resource optimization
+
+This is a hard gate, not a suggestion. Optimize Claude Code's four-hour reset window,
+weekly reset budget, and Codex usage discipline.
+
+- Idle state makes zero model calls and performs no polling.
+- Select the smallest suitable worker, model/effort, context, and number of runs.
+- Use compact artifacts instead of replaying the conversation.
+- Never run multiple owners on the same concern.
+- At most one focused retry per failed gate and at most three worker runs per goal.
+- Before a session/context window is constrained, persist a checkpoint and hand off.
+- Dollar caps and model mapping wait for the benchmark branch; structural caps apply now.
+- A resource budget failure transitions to STOPPED or BLOCKED, never to an unbounded retry.
+
 ## Cost, retry, and safety
 
 - No always-on polling.
