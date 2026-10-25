@@ -1,10 +1,10 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "agent-os",
-  "version": "0.1.0",
-  "description": "Reusable skills and agents: project planning, web development, code review, testing and validation, deployment verification, and a project brief that every session reads first. Includes RTK token-saving hooks.",
+  "version": "0.2.0",
+  "description": "Reusable skills and agents with fit-based routing, token-efficient handoffs, responsive design guards, project planning, web development, review, testing, deployment verification, and a project brief.",
   "author": { "name": "Yansz" },
   "repository": "https://github.com/yanskfz/agent-os",
   "license": "MIT",
-  "keywords": ["planning", "web", "review", "testing", "vercel", "mobile"]
+  "keywords": ["routing", "token-efficiency", "planning", "web", "responsive-design", "review", "testing", "vercel", "mobile"]
 }
