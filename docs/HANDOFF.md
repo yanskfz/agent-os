@@ -1,10 +1,10 @@
 # Active Handoff
 
-Status: HANDOFF
+Status: WORKING
 Goal: g-0001
 Owner: qa
 Surface: terminal
-Worker runs: 0/3
+Worker runs: 1/3
 
 ## Original task (verbatim)
 
@@ -20,7 +20,7 @@ Verify the approved new MSJ Profiles appearance in the Vercel preview and review
 
 ## Next
 
-{"action":"dispatch","owner":"qa","handoff":"docs/HANDOFF.md","runsLeft":3}
+{"action":"await_report","owner":"qa"}
 
 ## Rules
 

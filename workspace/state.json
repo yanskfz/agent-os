@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "state": "HANDOFF",
+  "state": "WORKING",
   "goal": "g-0001",
   "surface": "terminal",
   "task": "Verify the approved new MSJ Profiles appearance in the Vercel preview and review PR #3 before merge. Do not merge or deploy.",
@@ -37,7 +37,7 @@
       "evidence": []
     }
   ],
-  "runs": 0,
+  "runs": 1,
   "limits": {
     "maxRuns": 3,
     "maxRetriesPerGate": 1
@@ -47,5 +47,5 @@
   "blocked": null,
   "checkpoint": null,
   "pr": null,
-  "updated": "2026-10-25T07:02:58.936Z"
+  "updated": "2026-10-25T07:03:56.672Z"
 }
