@@ -1,6 +1,6 @@
 # Active Handoff
 
-Status: HANDOFF
+Status: BLOCKED
 Goal: g-0001
 Owner: claude-code
 Surface: terminal
@@ -18,7 +18,7 @@ Record this goal and keep this text unchanged.
 
 ## Next
 
-{"action":"dispatch","owner":"claude-code","handoff":"docs/HANDOFF.md","runsLeft":3}
+{"action":"escalate","kind":"access","reason":"scratch test: simulated missing access"}
 
 ## Rules
 

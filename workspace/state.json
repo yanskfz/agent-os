@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "state": "HANDOFF",
+  "state": "BLOCKED",
   "goal": "g-0001",
   "surface": "terminal",
   "task": "Live scratch test of the orchestrator trigger.\nRecord this goal and keep this text unchanged.",
@@ -26,8 +26,11 @@
   },
   "retries": {},
   "changes": [],
-  "blocked": null,
+  "blocked": {
+    "kind": "access",
+    "reason": "scratch test: simulated missing access"
+  },
   "checkpoint": null,
   "pr": null,
-  "updated": "2026-10-25T06:30:30.455Z"
+  "updated": "2026-10-25T06:31:26.692Z"
 }
