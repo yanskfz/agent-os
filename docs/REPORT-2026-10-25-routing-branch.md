@@ -98,3 +98,36 @@ Ordered by importance. "Confirmed" means observed in files or logs; "Unverified"
 - Behaviour with models other than Haiku.
 - Variance between runs; every result is a single run.
 - The interactive claude.ai/code UI (the harness is headless `claude -p`).
+
+## 8. Addendum: Codex decisions applied (plugin v0.2.1)
+
+Codex decisions received 2026-10-25 and what was done. Sections 1-7 above describe the state at commit `ac4ea5e`.
+
+| Codex decision | Done | Notes |
+|----------------|------|-------|
+| Keep the preamble, shorten to 2-3 lines, drop the skill reference | yes | Same text for developer; role-specific third criterion for the others (see deviations) |
+| Clarify external handoff wording | yes | Skill, requirement doc and `CLAUDE.md` rule 6: Codex or the project owner owns requirement authority; Claude Code records ambiguity in `BRIEF.md` and hands off |
+| Add a test for out-of-scope tasks | yes | Test H, 2 cases, PASS |
+| Rerun F and G on the new version | yes | both PASS at v0.2.1; G ran against the pushed branch |
+| Wire the design guard into the screenshot check | yes | `screenshot.js`: nine viewports, targets under 24x24 px, clipped header/footer elements |
+| Fix the 20 px navigation dot | yes | 24 px; also fixed a real 320 px overflow found by the new check |
+| Model benchmark in a separate branch | **not started** | deliberately out of this branch |
+
+**Deviations from the Codex text, for you to confirm or reject:**
+1. The planner and reviewer preambles differ from the generic text. The planner writes the acceptance criteria, so
+   requiring them as input would make it hand off every planning request. The reviewer needs a diff or files, not
+   criteria. Test B and D remain valid with this wording.
+2. The handoff names its fields (Scope, Owner, Unresolved) so that a handoff is well-formed and testable. The agent
+   no longer loads the routing skill, so the fields would otherwise be undefined for it.
+
+**New limitation found (finding 2 in `TEST-RESULTS.md`):** when a main session delegates to an agent, it can rewrite a
+vague request into detailed steps, and the agent then acts. Run directly as the agent, the preamble held. Closing this
+needs a rule for the delegating session, not for the agent. Question for Codex: should that rule live in `CLAUDE.md`
+("pass the user's task to subagents verbatim, and ask when it lacks acceptance criteria")?
+
+**Test outcome (details in `TEST-RESULTS.md`):** the first full v0.2.1 run had three failures (C, E, H). Causes: a
+harness bug (C), a blocked `echo` in the harness permissions (E), and an invalid test design (H). The harness was
+fixed and C, E, H rerun: PASS. All of A-H pass, but across three runs, one run each, one model.
+
+**Next, not started:** model benchmark on a separate branch with a budget cap and several runs per cell (Test A's cost
+varied 2.8x between two identical runs, so single runs cannot rank models), then `BRIEF.md`, `CHANGELOG.md`, `AGENTS.md`.
