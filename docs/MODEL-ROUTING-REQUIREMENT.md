@@ -51,10 +51,13 @@ Out of scope for this slice:
 
 ## Assumptions (to verify, not facts)
 
-- A1. An agent file can set its model with a `model:` frontmatter field, and a plugin agent honours it. Today no
-  agent sets `model:`. The first slice proves or disproves this.
-- A2. The session's `result` event reports cost (`total_cost_usd`) and the model that served the turn. The test harness
-  does not record cost yet; cost figures so far were read from the logs by hand.
+- A1. **Verified in slice 1 (Test J).** An agent file's `model:` frontmatter decides the model that serves it: as a subagent it
+  is honoured whatever the main session runs on (Sonnet and Opus were served from a Haiku session), and an agent with no
+  `model:` inherits the session's model. Run directly with `--agent` and no `--model` flag, the field applies; the
+  `--model` flag overrides it. Today no repo agent sets `model:`.
+- A2. **Verified in slice 1 (Test J).** The `init` event gives the session model. The `result` event's `modelUsage` lists every
+  model that produced tokens, with its cost, and is the only place a subagent's model appears (its messages are not
+  streamed). The harness now returns `modelUsage`, `total_cost_usd` and turns for every run.
 - A3. Under the login, `total_cost_usd` is a measure of relative usage and not a bill. The real limits are the
   four-hour and weekly usage windows, so the run cap matters more than the dollar figure.
 - A4. A single run is not evidence: Test A's cost differed 2.8x between two identical runs. Costs of Sonnet and Opus are

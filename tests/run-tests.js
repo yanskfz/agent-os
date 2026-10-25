@@ -47,9 +47,10 @@ function workspace(name) {
 // Runs one headless Claude Code session and returns its parsed event stream.
 // With `agent`, the whole session runs as that agent (`--agent`), so the prompt reaches it verbatim instead of
 // being rewritten by a main session before delegation.
-function claude(name, cwd, prompt, { pluginDir = PLUGIN, env = {}, maxTurns = 30, agent = null } = {}) {
+// `model: null` leaves out --model, so an agent's own `model:` frontmatter (or the session default) decides.
+function claude(name, cwd, prompt, { pluginDir = PLUGIN, env = {}, maxTurns = 30, agent = null, model = MODEL } = {}) {
   const suffix = agent ? "" : "\n\nRun any subagent in the foreground (run_in_background: false) and wait for it to finish.";
-  const args = ["-p", prompt + suffix, "--model", MODEL, "--max-turns", String(maxTurns),
+  const args = ["-p", prompt + suffix, ...(model ? ["--model", model] : []), "--max-turns", String(maxTurns),
     "--output-format", "stream-json", "--verbose", "--permission-mode", "acceptEdits",
     "--allowedTools", ...ALLOWED];
   if (pluginDir) args.push("--plugin-dir", pluginDir);
@@ -79,7 +80,10 @@ function claude(name, cwd, prompt, { pluginDir = PLUGIN, env = {}, maxTurns = 30
     }
   }
   // Background agents report back in a later turn; their text then only appears in the final result.
-  return { code: r.code, init, toolUses, hooks, result, agentResults, raw: r.out };
+  // `modelUsage` (per model: tokens and cost) is the only place a subagent's model shows up; its messages are not streamed.
+  const last = events.filter((e) => e.type === "result").pop() || {};
+  return { code: r.code, init, toolUses, hooks, result, agentResults, raw: r.out,
+    modelUsage: last.modelUsage || {}, cost: last.total_cost_usd, turns: last.num_turns };
 }
 
 function invoked(run, agent) {
@@ -347,6 +351,47 @@ tests.I = function I() {
     if (!ok) allOk = false;
   });
   record("I", "A main session delegates without rewriting the task", levels, evidence, allOk ? "PASS" : "FAIL");
+};
+
+tests.J = function J() {
+  // Does an agent's `model:` frontmatter decide which model serves it? Judged from the init event and the result's
+  // modelUsage (the models that actually produced tokens), never from what an agent says. Uses a throwaway plugin so no
+  // repo agent file changes. The main session runs on MODEL; it must be a cheaper model than the probes use, otherwise a
+  // subagent on the same model cannot be told apart in modelUsage.
+  if (/sonnet|opus/i.test(MODEL)) return record("J", "Agent model field is honoured", { MODEL }, {}, "BLOCKED");
+  const probe = fs.mkdtempSync(path.join(os.tmpdir(), "agentos-probe-"));
+  fs.mkdirSync(path.join(probe, ".claude-plugin"));
+  fs.mkdirSync(path.join(probe, "agents"));
+  fs.writeFileSync(path.join(probe, ".claude-plugin/plugin.json"), JSON.stringify({ name: "probe", version: "0.0.1", description: "Throwaway probe agents for the model field test." }));
+  for (const [name, model] of [["sonnet", "sonnet"], ["opus", "opus"], ["inherit", null]]) {
+    fs.writeFileSync(path.join(probe, "agents", `probe-${name}.md`),
+      `---\nname: probe-${name}\ndescription: Probe agent${model ? ` that requests the ${model} model` : " with no model field"}. Replies with one word.\n${model ? `model: ${model}\n` : ""}tools: Read\n---\nReply with the single word ok and nothing else.\n`);
+  }
+  const keys = (run) => Object.keys(run.modelUsage);
+  const only = (run, re) => keys(run).length > 0 && keys(run).every((k) => re.test(k));
+  const has = (run, re) => keys(run).some((k) => re.test(k));
+  const cases = [
+    { key: "subagent model: sonnet", via: "subagent", agent: "sonnet", ok: (r) => has(r, /sonnet/i) && has(r, new RegExp(MODEL, "i")) },
+    { key: "subagent model: opus", via: "subagent", agent: "opus", ok: (r) => has(r, /opus/i) && has(r, new RegExp(MODEL, "i")) },
+    { key: "subagent without model: inherits the session model", via: "subagent", agent: "inherit", ok: (r) => only(r, new RegExp(MODEL, "i")) },
+    { key: "--agent with model: opus and no --model flag", via: "direct", agent: "opus", model: null, ok: (r) => /opus/i.test(r.init.model || "") && only(r, /opus/i) },
+    { key: "--model flag overrides the agent's model: opus", via: "direct", agent: "opus", model: "claude-sonnet-5-5", ok: (r) => /sonnet/i.test(r.init.model || "") && only(r, /sonnet/i) }
+  ];
+  const levels = {};
+  const evidence = {};
+  let allOk = true;
+  cases.forEach((c, i) => {
+    const dir = workspace("J" + (i + 1));
+    const opts = { pluginDir: probe, maxTurns: 6 };
+    if (c.via === "direct") Object.assign(opts, { agent: `probe:probe-${c.agent}`, model: c.model });
+    const prompt = c.via === "direct" ? "go" : `Use the probe:probe-${c.agent} agent to do its task, run it in the foreground, then tell me what it said.`;
+    const run = claude(`J${i + 1}-${c.via}-${c.agent}`, dir, prompt, opts);
+    const ok = run.code === 0 && c.ok(run);
+    if (!ok) allOk = false;
+    levels[`${c.key}: served by`] = `${keys(run).join(" + ") || "nothing"} ${ok ? "(as expected)" : "(UNEXPECTED)"}`;
+    evidence[`case${i + 1}`] = { sessionModel: run.init.model, modelUsage: run.modelUsage, cost: run.cost, turns: run.turns };
+  });
+  record("J", "Agent model field is honoured", levels, evidence, allOk ? "PASS" : "FAIL");
 };
 
 const pick = process.argv.slice(2).map((s) => s.toUpperCase());

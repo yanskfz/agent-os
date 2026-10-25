@@ -180,3 +180,30 @@ Not verified live:
 - **Dropped third queued event**: runs were sent one at a time.
 - **The idle run's job summary page**: the step summary is not available through the API; the idle result is shown by the branch not being created.
 - `workspace-scratch` is left in place as evidence; delete it when no longer needed.
+
+## Agent model field (Test J, slice 1 of `docs/MODEL-ROUTING-REQUIREMENT.md`)
+
+Question: does an agent's `model:` frontmatter decide which model serves it, and can a run show which model it was?
+Method: a throwaway plugin with probe agents (`model: sonnet`, `model: opus`, no field), main session on `claude-haiku-5-5`, judged from the `init` event and the `result` event's `modelUsage`, never from what an agent says. Run once on 2026-10-25.
+
+| Case | Served by (from `modelUsage` / `init`) | Result |
+|------|----------------------------------------|--------|
+| subagent `model: sonnet` | haiku (main) + sonnet | as expected |
+| subagent `model: opus` | haiku (main) + opus | as expected |
+| subagent with no `model:` | haiku only | inherits the session model |
+| `--agent` with `model: opus`, no `--model` flag | opus only | the field applies |
+| `--agent` with `model: opus`, `--model claude-sonnet-5-5` | sonnet only | the flag overrides the field |
+
+| Level | Status |
+|-------|--------|
+| Created | Test J in `tests/run-tests.js`; the harness now returns `modelUsage`, cost and turns for every session; `model: null` runs without `--model` |
+| Passed | J: PASS (5 of 5 cases). H rerun after the helper change: PASS |
+| Assumptions settled | A1 (the field is honoured) and A2 (served model and cost are in the event stream), both marked verified in the requirement |
+| Not checked | models other than Haiku as the main session; the interactive app (headless only); whether a subagent on the same model as the main session can be told apart (it cannot: `modelUsage` has one key per model) |
+
+Consequences for the benchmark (slice 2), for Codex to confirm:
+- To vary the model of a **subagent** run, the harness has to write the `model:` value into a temporary copy of the plugin's agent file for each cell, because the main session's `--model` does not reach the subagent.
+- To vary the model of a **direct `--agent`** run (Test H), pass `--model`; the flag wins over the agent file.
+- A run is valid only if the requested model appears in `modelUsage`. Keep the main session on the cheapest model (Haiku) so a Sonnet or Opus subagent shows up as its own key.
+- Cost is not stable per token: the same Sonnet call (2 input, 4 output tokens) was reported at $0.0004 and $0.0147 in two runs, and a Sonnet subagent at $0.0070 and $0.0041, probably because of prompt-cache state. This supports 5 runs per cell and a cost ceiling taken from a measured pilot, not from one run. Cost of Test J (5 runs): $0.0640.
+
