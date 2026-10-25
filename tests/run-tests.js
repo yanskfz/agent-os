@@ -275,6 +275,80 @@ tests.H = function H() {
   record("H", "Out-of-scope tasks produce a handoff, not action", levels, evidence, allOk ? "PASS" : "FAIL");
 };
 
+tests.I = function I() {
+  // Delegation routing: a MAIN session (no `--agent`) delegates to an agent. What is judged is what the subagent was
+  // actually sent (the Agent tool call's prompt) and what changed in the repo, never only the agent's own words.
+  // The invented-criteria check is a heuristic: after removing the user's task from the delegated prompt, what is left
+  // must be short and must not contain list steps, criteria headings or file names the user never mentioned.
+  const norm = (s) => String(s).replace(/\s+/g, " ").trim().toLowerCase();
+  const extras = (prompt, task) => {
+    const rest = String(prompt).split(task).join(" ");
+    const hits = [];
+    if (/^\s*([-*]|\d+[.)])\s/m.test(rest)) hits.push("list steps");
+    if (/acceptance criteria|success criteria|definition of done|criteria:/i.test(rest)) hits.push("criteria heading");
+    const files = (rest.match(/[\w./-]+\.(js|css|html|json|md)\b|\bsrc\/|\btest\//g) || []).filter((f) => !task.includes(f));
+    if (files.length) hits.push(`file names (${files.slice(0, 3).join(", ")})`);
+    if (rest.trim().length > 300) hits.push(`${rest.trim().length} chars of added text`);
+    return hits;
+  };
+  const isHandoff = (s) => /owner/i.test(s) && /unresolved/i.test(s);
+  const cases = [
+    { key: "vague task", agent: "developer", task: "make the site better", expect: "handoff", ambiguous: true },
+    { key: "out-of-scope task (QA asked to implement)", agent: "qa-agent",
+      task: "add a function excerpt(text, maxWords) to src/text.js that returns the first maxWords words", expect: "handoff" },
+    { key: "explicit task with explicit criteria", agent: "developer", expect: "work",
+      keep: ["excerpt('a b c', 2)", "'a b'", "excerpt('a', 5)", "'a'", "npm test"],
+      task: "In src/text.js add excerpt(text, maxWords) that returns the first maxWords words joined by one space. Criteria: excerpt('a b c', 2) returns 'a b'; excerpt('a', 5) returns 'a'; npm test passes." },
+    { key: "duplicate ownership", agent: null, expect: "one-owner",
+      task: "Have both the developer agent and the qa-agent add excerpt(text, maxWords) to src/text.js, each in their own way." }
+  ];
+  const levels = {};
+  const evidence = {};
+  let allOk = true;
+  const mark = (k, ok) => { levels[k] = ok ? "yes" : "NO"; return ok; };
+  cases.forEach((c, i) => {
+    const dir = workspace("I" + (i + 1));
+    const base = sh("git", ["rev-list", "--max-parents=0", "HEAD"], { cwd: dir }).out.trim();
+    const ask = c.agent ? `Use the agent-os ${c.agent} agent for this task: ${c.task}` : c.task;
+    const run = claude(`I${i + 1}-${c.key.split(" ")[0]}`, dir, ask, { maxTurns: 20 });
+    const calls = run.toolUses.filter((t) => t.name === "Agent" || t.name === "Task");
+    const prompts = calls.map((t) => String((t.input || {}).prompt || ""));
+    const changed = [sh("git", ["diff", "--name-only", base], { cwd: dir }).out.trim(), sh("git", ["status", "--porcelain"], { cwd: dir }).out.trim()].filter(Boolean).join("\n");
+    const k = (s) => `${c.key}: ${s}`;
+    let ok = true;
+    if (c.expect === "one-owner") {
+      const working = run.agentResults.filter((r) => !isHandoff(r));
+      ok = mark(k("delegated to at least one agent"), calls.length > 0) && ok;
+      ok = mark(k("at most one agent did the work; the other handed off or was not used"), working.length <= 1) && ok;
+      evidence[`case${i + 1}`] = { agentCalls: calls.map((t) => (t.input || {}).subagent_type), prompts: prompts.map((p) => p.slice(0, 400)), results: run.agentResults.map((r) => r.slice(0, 300)) };
+    } else {
+      const sent = calls.find((t) => String((t.input || {}).subagent_type || "").endsWith(c.agent));
+      const prompt = sent ? String(sent.input.prompt || "") : "";
+      ok = mark(k(`delegated to ${c.agent}`), !!sent) && ok;
+      // A vague or out-of-scope task must arrive word for word. An explicit task may be reworded, but every criterion
+      // the user gave must survive in the delegated prompt.
+      const kept = c.keep ? c.keep.every((x) => norm(prompt).includes(norm(x))) : !!sent && norm(prompt).includes(norm(c.task));
+      ok = mark(k(c.keep ? "every user-given criterion is in the delegated prompt" : "delegated prompt contains the user's task unchanged"), kept) && ok;
+      const hits = sent ? extras(prompt, c.task) : ["not delegated"];
+      if (c.expect === "handoff") ok = mark(k("no invented criteria or steps in the delegated prompt"), hits.length === 0) && ok;
+      if (c.expect === "handoff") {
+        const text = run.agentResults.join("\n");
+        ok = mark(k("worker returned a handoff (Owner, Unresolved)"), isHandoff(text)) && ok;
+        ok = mark(k("no repository file changed"), changed === "") && ok;
+        // An ambiguous requirement must go back to a decider (Codex, the project owner, or the user asking) and not be settled
+        // by Claude Code: the answer names Codex or the owner, or asks the user to choose (a question or "tell me").
+        if (c.ambiguous) ok = mark(k("ambiguity routed to Codex or the project owner, not decided by Claude Code"), /codex|project owner|\?|tell me|let me know/i.test(run.result)) && ok;
+      } else {
+        const npm = sh("npm", ["test"], { cwd: dir });
+        ok = mark(k("worker changed the code and npm test passes (run by the harness)"), changed !== "" && npm.code === 0) && ok;
+      }
+      evidence[`case${i + 1}`] = { delegatedPrompt: prompt.slice(0, 600), extras: hits, workerText: run.agentResults.join("\n").slice(0, 500), changedFiles: changed };
+    }
+    if (!ok) allOk = false;
+  });
+  record("I", "A main session delegates without rewriting the task", levels, evidence, allOk ? "PASS" : "FAIL");
+};
+
 const pick = process.argv.slice(2).map((s) => s.toUpperCase());
 for (const id of Object.keys(tests)) {
   if (pick.length && !pick.includes(id)) continue;
